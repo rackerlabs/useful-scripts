@@ -43,7 +43,7 @@ check_local_branch() {
     fi
     branch_name=$(echo "$1" | sed 's/\///g')
     answer=""
-    current_branch=$(git branch | grep \* | cut -d ' ' -f2)
+    current_branch=$(git symbolic-ref --short -q HEAD)
 
     if [[ "$current_branch" == "master" ]]; then
         echo
@@ -75,7 +75,6 @@ check_local_branch() {
 # If "update/check" then make sure repo exists. If "add", make sure repo does not exist
 repo_exist_check() {
     _pwd=$(pwd)
-    _new="$3"
 
     if [ "$1" == "" ]; then
         error_message '
@@ -149,10 +148,10 @@ validate_current_commit() {
 
     case "$repo_location" in
         "verify")  # Verifying the commit hash is valid
-        branch_name=$(git branch | grep \* | cut -d ' ' -f2)
+        branch_name=$(git symbolic-ref --short -q HEAD)
         repo_location="remote"
 
-        raw_subrepo="https://raw.githubusercontent.com/rackerlabs/useful-scripts/$branch_name/$_subrepo_name"
+        raw_subrepo="$REPOURL_RAW""$branch_name/$_subrepo_name"
         subrepo_sha1sum=$(curl -s "$raw_subrepo$selection" | sha1sum | awk '{print $1}' )
         script_location="$raw_subrepo$selection"
 
@@ -161,7 +160,7 @@ validate_current_commit() {
         ;;
 
         "local")  # For branches not yet pushed to github
-        branch_name=$(git branch | grep \* | cut -d ' ' -f2)
+        branch_name=$(git symbolic-ref --short -q HEAD)
 
         subrepo_sha1sum=$(sha1sum "$_dir$selection" | awk '{print $1}' )
         script_location="$_dir$selection"
@@ -175,7 +174,7 @@ validate_current_commit() {
         branch_name="master"
         repo_location="remote"
 
-        raw_subrepo="https://raw.githubusercontent.com/rackerlabs/useful-scripts/$branch_name/$_subrepo_name"
+        raw_subrepo="$REPOURL_RAW""$branch_name/$_subrepo_name"
         subrepo_sha1sum=$(curl -s "$raw_subrepo$selection" | sha1sum | awk '{print $1}' )
 
         script_location="$raw_subrepo$selection"
@@ -218,7 +217,7 @@ validate_current_commit() {
             echo "     $script_location"
             echo
             echo "Is this a local branch or a remote branch?"
-            echo -e "'--check' only works on the master branch. You are on the following branch: $RED$(git branch | grep \* | cut -d ' ' -f2)"$EFC
+            echo -e "'--check' only works on the master branch. You are on the following branch: $RED$(git symbolic-ref --short -q HEAD)"$EFC
             echo "Please use '--verify local' if the branch has not been merged into the master"
             echo
             echo "------------------------------------------"
