@@ -7,7 +7,7 @@
 # review when someone opens a pull request.
 *       @LukeShirnia @dsgnr @LukeHandle
 
-# In this example, @doctocat owns any files in the build/logs
+# The following section assigns reviewers per
 # directory at the root of the repository and any of its
 # subdirectories.
 postfixbuddy/ @dsgnr
