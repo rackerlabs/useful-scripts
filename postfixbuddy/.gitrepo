@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/dsgnr/postfixbuddy.git
+	branch = master
+	commit = 556aeb33b52bd87d57ea7afc3daa54ddbf09eda8
+	parent = f67dfc653d44cb586ae1d802b6f993720725de41
+	method = merge
+	cmdver = 0.4.0
