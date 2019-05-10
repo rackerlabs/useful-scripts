@@ -1,0 +1,23 @@
+language: python
+python:
+- '2.7'
+- '3.6'
+
+notifications:
+  slack:
+    secure: TtLymSTL1WjiiP38r5SeCyvZLvz/rsehwYmpuOMKkMbhFq2pNa4pcla6JZSL0qO76/xkZqSYBsS3Wf37029h9IPfx+M54x0d32S7FUxQ9Jo5KSv4qCUEp38OEHQcFLctlGhKSYMPITWMGNXlLzPfWN2Q4oC+W4bVvPetJBpHxI4+xxcQEEPlC0IbQ5GCQ20QC1D+SqIhiqqzU6sptqNHUx6mzUX4BGciePMUBQvDSSUYq14V/hBkpHCq1CyP2XzFw5mn8QIEIb8W7O9cvGGsLtgu8y6KYCb3ZEDbu4UlB7ESVeFuqLwa5XbNPpNY3jef0PBC0SHLfpW9+NfPQ/nrUwrDHBCqS79CwHLBnyxoDnoXMM/esEqSl7rz6fME6RtS/JmeFSkgtlscHj+Tx2JpfMtr/BKOYj8CLRGGx86DD5LEcmLhFoAf41XyyDz3WH+YM7rM5BSstwZ83ffC4hTKAUaGge8G+A2i0jvdkbRgDgJRWCEBWODYmdyA4P0o5LKbbzJVPWtAjXbmHmj5UnJ+p/O5G0ySH6Oquy3asWNrU4tR9sRvZTse8yUyz/Uw+Y3cNwXY02QvqkXox7Nc2Z4vxgON+hjXsXcBZB8OuCq+2NXdhFIsTvLwEBNtE5w4T8/mgEhHZdmWZjmhIpEVJ/MVUNr2mGxF2ml3P8cUo5lHWgk=
+
+dist: xenial
+env: PYTHONDONTWRITEBYTECODE=true
+sudo: required
+
+before_install:
+- sudo apt-get update -qq
+- sudo apt-get install -y -qq postfix
+
+install:
+- pip install -U -q pip
+- pip install -r requirements.txt
+
+script:
+- make tests
