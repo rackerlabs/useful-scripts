@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/tahz7/traffic_analyser.git
+	branch = master
+	commit = af3534ea81eae33a543a5192ba2a5e0e01c64a37
+	parent = 9662464af5c414a91e5ffd76bde863f95d9376a2
+	method = merge
+	cmdver = 0.4.0
