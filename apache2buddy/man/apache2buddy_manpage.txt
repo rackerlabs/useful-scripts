@@ -1,0 +1,93 @@
+NAME
+
+	apache2buddy.pl (perl script)
+
+	A Free and Open Source Project for apache webserver memory usage analysis.
+
+
+
+SYNOPSIS
+
+	curl -sL https://raw.githubusercontent.com/richardforth/apache2buddy/master/apache2buddy.pl | perl [-] [options]
+
+
+DESCRIPTION
+
+	A Free and Open Source Project for apache webserver memory usage analysis.
+
+	It is hosted on the domain of the same name.	
+
+
+
+OPTIONS
+
+	If no options are specified, the basic tests will be run.
+
+	-h, --help		     Print this help message
+	-p, --port=PORT		     Specify an alternate port to check (default: 80)
+	    --pid=PID		     Specify a PID to bypass the "Multiple PIDS listening on port 80" error.
+	-v, --verbose		     Use verbose output (this is very noisy, only useful for debugging)
+	-n, --nocolor		     Use default terminal color, dont try to be all fancy! 
+	-H, --noheader		     Do not show header title bar.
+	-N, --noinfo		     Do not show informational messages.
+	-K, --no-ok	 	     Do not show OK messages.
+	-W, --nowarn		     Do not show warning messages.
+	-L, --light-term	     Show colours for a light background terminal.
+	-r, --report		     Implies -HNWK or --noinfo --nowarn --no-ok --noheader --skip-maxclients --skip-php-fatal --skip-updates
+	-P, --no-check-pid	     DON'T Check the Parent Pid File Size (only use if desperate for more info, results may be skewed).
+	    --skip-maxclients	     Skip checking in maxclients was hit recently, can be slow, especialy if you have large log files.
+            --skip-php-fatal         Skip checking for PHP FATAL errors, can be slow, especialy if you have large log files.
+            --skip-updates           Skip checking for package updates, can be slow or problematic, causing the script to hang.
+	-O, --skip-os-version-check  Skips past the OS version check.
+                                     Allows one to bypass EOL version showstopper but be mindful:
+                                      skipping the os version check is not recommended as features may be 
+                                      deprecated or removed and apache2buddy is not backward compatible 
+                                      with end of life operating systems, this may cause errors and unpredictable 
+                                      behaviour.
+
+
+
+OUTPUT KEY:
+
+        [ -- ]  = Information
+        [ @@ ]  = Advisory
+        [ >> ]  = Warning
+        [ !! ]  = Critical
+
+
+EXAMPLES
+
+	curl -sL https://raw.githubusercontent.com/richardforth/apache2buddy/master/apache2buddy.pl | perl
+	curl -sL https://raw.githubusercontent.com/richardforth/apache2buddy/master/apache2buddy.pl | perl - --help
+	curl -sL https://raw.githubusercontent.com/richardforth/apache2buddy/master/apache2buddy.pl | perl - --report
+
+	Note: The reason for the extra dash after perl and before options, is to tell perl we are sending the options to the script, not perl
+	itself, otherwise perl displays its own help or complains about a missing option --report, for example.
+
+
+ENVIRONMENT
+
+	LC_* variables are checked during preflight checks, they MUST be en_GB or en_US in order to avoid runtime errors.
+	Script runs as root and requires apropriate PATH set up to access *sbin* commands.
+
+
+
+BUGS
+
+	No known bugs. Bugs or issues can be found here:
+        https://github.com/richardforth/apache2buddy/issues
+
+
+ISSUES
+
+	There is an issue with some parent PIDs consuming large amounts of RAM, child pids inherit this
+	but don't necessarily use it, which skews results. The current workaround is to check for PPID
+	which is less than 50MB, if over 50MB, the script aborts.
+
+	Other issues can be found here:
+	https://github.com/richardforth/apache2buddy/issues
+
+AUTHOR
+
+   	 Richard A. Forth
+	 richard DOT forth AT gmail DOT com

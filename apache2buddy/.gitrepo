@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/richardforth/apache2buddy.git
+	branch = staging
+	commit = 9672bbc56f257e59aba4a51f2e903645d7ca30a2
+	parent = bbb533ecde99b5ca363c7409c85511402554e087
+	method = merge
+	cmdver = 0.4.0
