@@ -10,5 +10,12 @@
 # The following section assigns reviewers per
 # directory at the root of the repository and any of its
 # subdirectories.
-postfixbuddy/ @dsgnr
+postfixbuddy/     @dsgnr
 traffic_analyser/ @dsgnr
+pleskbuddy/       @dsgnr
+php-fpmpal/       @gsgnr
+Low_disk/         @LukeShirnia
+out-of-memory/    @LukeShirnia
+nginxctl/         @LukeShirnia
+ps_mem/           @LukeShirnia
+apache2buddy/     @richardforth
