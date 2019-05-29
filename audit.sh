@@ -103,7 +103,7 @@ clone_repo() {
 # Not everything in a subrepo needs to be checksum'd. Only the file being executed
 # This function finds the appropriate file(s) and asks you to select if more than 1 executable file exists
 find_checksum_file() {
-    _files=$(for i in $(find $1 -type d -exec ls '{}' ';' | grep ".sh\|.py" | grep -v 'setup'); do echo $i; done)
+    _files=$(for i in $(find $1 -type d -exec ls '{}' ';' | grep ".sh\|.py\|mysqltuner.pl" | grep -v 'setup'); do echo $i; done)
 
     counter=1
 
