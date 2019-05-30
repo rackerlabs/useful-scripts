@@ -1,0 +1,506 @@
+CHANGELOG
+
+When		Who		What
+======================================================================================
+2019-04-17      Richard Forth   Ubuntu 14.04 went EOL. 
+2019-02-14      Richard Forth   Closes #250
+				Make the serverlimit apply only to prefork
+				model.
+2019-02-14      Richard Forth   Closes #289
+				Apply fixup for borked ps command on Plesk
+				servers.
+2019-02-12      Richard Forth   Closes #294
+				Add verbiage about new --skip-os-version-check
+				option.
+2019-02-12      psytester       PR #294
+				exclude rotatelogs binary from $current_proc_count
+				calculation
+2019-02-12      Richard Forth   Closes Issue #292
+				Updated man page textfile for 2019
+2019-02-09      Richard Forth   Closes Issue #283
+				This update treates varnich differently to
+				other detected services due to changes in
+				behvious from 4.1+
+2019-02-09      Richard Forth   Revert changes made in  #283
+				This went in staging but then got reverted as
+				it caused problems and had inexpected
+				behaviour.
+2019-02-09      Richard Forth   Closes Issue #283
+				Service detection inprovements to include
+				services not running as root (eg vcache)
+2019-02-01      Richard Forth   Closes Issue #12
+				Detect and skip unexpected directories in
+				glob. Previously these were added to the list
+				of files for processing and caused an
+				exception to be raised.
+2019-01-23      Richard Forth   Closes Issue #287
+				Typo on --skip-os-version-check option
+				rectified.
+2019-01-08      psytester       Added support for SUSE Linux and apache in
+				/opt/apache2
+2018-12-02      Richard Forth   Closes Issue #281
+				Php memory limit was only interpretted in MB.
+				Forced a change that accepts whatever is in
+				the config, eg '128M' or '16G'.
+2018-10-13      Richard Forth   Closes Issue #278
+				logs to log (spelling correction in verbiage)
+2018-10-13      Richard Forth   Closes Issue #194
+				Detect issues getting package updates.
+2018-10-13      Richard Forth   Closes Issue #245
+				Skip OS Version Check option, see --help.
+2018-10-13      Richard Forth   Closes Issue #221
+				Log Uptime in /var/log/apache2buddy.log
+2018-10-13      Richard Forth   Closes Issue #251 
+				Warn if vhost_count exceeds maxclients
+2018-10-12      Richard Forth   Closes Issue #273 Graceful catch of syntax
+				error in httpd.conf when parsing config.
+2018-10-12      Richard Forth   Closes Issue #252 Add verbiage about Apache
+				2.2 EOL. Refer to https://httpd.apache.org/.
+2018-10-12      Richard Forth   Closes Issue #255 Ignore large gzipped files.
+2018-10-12      Richard Forth   Closes Issue #268 Additional verbiage about
+				maxclients/maxrequestworkers being hit only
+				once per lifetime.
+
+				For more information see: 
+				https://github.com/apache/httpd/blob/0b61edca6cdda2737aa1d84a4526c5f9d2e23a8c/server/mpm/prefork/prefork.c#L809
+2018-10-12      Richard Forth   Closes Issue #241 --no-check-pid causes perl
+				error. 
+2018-09-26      Andriy Fetsyuk  Merged a change to support more environments. 
+2018-08-30      Richard Forth   Issue #259 fix fpm support for ubuntu systems. 
+2018-08-28      Richard Forth   Issue #259 add support for ubuntu 18.04 
+2018-05-11      Richard Forth   Issue #253 need to specify a pid to bypass the 
+				'Multple PIDS listeing on port 80' error.
+2018-02-10      Richard Forth   Addressed a concern over plesk vhosts counting
+                                now ommiting domains containing:
+				     - lists
+				     - default
+				     - webmail
+				from the count.
+2017-12-05	Richard Forth   Closes #231 Respect ServerLimit.
+2017-11-01	Richard Forth   Closes #229 Removed easter egg, causing problems.
+2017-10-13	Richard Forth   Closes #223 Added an easter egg.
+				To trigger it, set maxclients /
+				maxrequestworkers to 5 or less.
+2017-10-13	Richard Forth   Closes #222 pidfile not found when ecased in quotes.
+2017-10-13	Richard Forth   Added some much needed carriage returns to VERBOSE lines.
+2017-07-14	Richard Forth   Resolved #215, pidfile issue.
+2017-07-08	Richard Forth   Resolved #195, virtualmin/webmin pidfile issue.
+2017-07-08	Richard Forth   Resolved #211, detect virtualmin/webmin install.
+				Note: only displays webmin version in virtualmin
+				installs. 
+2017-07-08	Richard Forth   Resolved #209, Yet more ubuntu madness...
+				No /etc/php/7.0/apache2 folder, this is
+				/etc/php/7.0/fpm. Added logic to include this.
+2017-07-08	Richard Forth   Resolved #207, Hard Fail in OS is not listed
+				as supported.
+2017-07-08	Richard Forth   Resolved #206, Drop support for debian 7
+				Issues with perl modules out of the box.
+2017-07-08	Richard Forth   Resolved #205 at least on Debian 9
+				debian update check broken, requires python
+				Addded a new preflight check to check for a
+				python binary.
+				Also adjusted the way to check what OS we are
+				running as debian 9 now reports its distro in
+				all lowercase.
+2017-07-08	Richard Forth   Resolved #197 at least on Debian 9
+				debian php.ini using cli not apache
+				committed to staging for further testing
+2017-07-08	Richard Forth   Closes #204, Debian 9 pidfile not found error.
+2017-07-07	Richard Forth   Closes #201, a serious bug that invoked OOMKILLER when
+				scanning very large log files.
+2017-06-13	Richard Forth   Fixed uptime logic problem.
+2017-06-13	Richard Forth   Added more verbosity.
+2017-04-27	Richard Forth   Added more verbosity, fixed some typos.
+2017-04-20	Richard Forth   Closes #184 , Modified PHP Fatal Error Check.
+				- Now works on subfolders correctly
+				- removes need for backticked grep
+				- cleaner and more structured summaries rather
+				than actual log output.
+2017-04-20	Richard Forth   Closes #183 , Added skip checks for the following:
+				--skip-maxclients
+				--skip-php-fatal
+				--skip-updates
+				See --help for more information.
+2017-04-04	Richard Forth   Added 'Red Hat Enterprise Linux Server' to new
+				list of supported OSes. Fixes #179. Bug. 
+2017-04-02	Richard Forth   Added code to detect older EOL OS versions and abort.
+				Still in soft-fail at the moment.
+2017-04-02	Richard Forth   Added code to detect EOL OS versions and abort.
+				Still in soft-fail at the moment.
+2017-04-02 	Richard Forth   Laid foundations for new OS detection using
+				some embedded python, this actually reduces
+				required code base by over 100 lines of code,
+				missing OS verification checks now but will
+				fix this in next update.
+2017-03-28 	Richard Forth   Small bug fix.
+2017-03-25 	Richard Forth   Improved regex around the vhost count, specifically
+				when looking for "port" it was capturing 
+				aliases etc that has the word port as part of it, like
+				support.mydomain.com, the regex should filter out what
+				we dont want to see and only give us a true count of
+				vhosts. Closes #160.
+2017-03-25 	Richard Forth   Downgraded some warnings to advisory messages.
+				Specifically where vhost count is greater than
+				MaxClients / MaxRequestWorkers, also changed
+				the wording slightly.
+2017-03-25 	Richard Forth   Added a key to the usage() output, see --help
+2017-03-25 	Richard Forth   Fixed some warnings and advisory messages not
+				being hidden when using --nowarn or --report oprtions.
+2017-03-25 	Richard Forth   Made the commands I think that are likely to
+				fail due to different locale settings run in 
+				en_GB.UTF-8 which doesnt affect system locale
+				Also removed obsolete locale code that didnt
+				do the job I wanted, also removed another 
+				'privado' word I found, as this is now
+				obsolete.
+2017-03-25 	Richard Forth   Minor formatting issue in vhost breakdowns.
+				Specifically removed extra space before
+				variable in output.
+2017-03-24 	Richard Forth   Fixed vhost breakdowns for when $real_port is
+				not defined.
+2017-03-24 	Richard Forth   Fixed vhost breakdowns for when apache is not
+				listening on port 80, but a custom port.
+2017-03-24 	Richard Forth   Fixed some issues with vhost count breakdowns.
+2017-03-24 	Richard Forth   Removed 'privado' word, as locale setting makes this
+				redundant.
+2017-03-24 	Richard Forth   Added vhost count breakdown for HTTP/HTTPS,
+				closes #142
+2017-03-24 	Richard Forth   Removed 'OUCA' word, as locale setting makes this
+				redundant.
+2017-03-24 	Richard Forth   Worked out that I can actually set a locale
+				without affecting the system locale, closes
+				#144
+2017-03-07 	Richard Forth   Added Verbose message to start of PHP Fatal
+				Checks, Closes #139
+2017-02-28 	Richard Forth   Added en_AU to locale Preflight Check, Closes #137
+2017-02-24 	Richard Forth   Preflight Check requires en_US or en_GB, Closes #127
+2017-02-24 	Richard Forth   PHP No longer a hard requirement. Closes #128
+2017-02-24 	Richard Forth   Removed blocking code when PHP binary not found.
+2017-02-09 	Richard Forth   Removed some obsolete lines of code.
+2017-02-05 	Richard Forth   Moved all the github messaging into comments
+				at the top of the file, rather than in output.
+2017-02-05 	Richard Forth   Added wiki page and better documentation and
+				error messaging around the parent PID, if the
+				script exists because it is greater than 50MB
+				- addresses issue #110
+2017-02-03 	Richard Forth   Changed the logo for a more subtle and
+				professional, simple, and clean look.
+2017-01-28 	Richard Forth   Fixed #102 rpm error on ubuntu systems.
+				- hardcoded "MySQL" in to detection string rather than
+				adding lines and lines of unnecessary code trying to
+				get the actual MySQL variant. I decided it wasnt that
+				important to warrant the extra payload trying to
+				ascertain the right OS.
+				 - this change backs out the fix used to address issue
+				#62 (MariaDB incorrectly identified as MySQL).
+2017-01-28 	Richard Forth   Fixed #103 Spelling mistake.
+2017-01-26 	Richard Forth   Fix version support cleanup and verbosity fixes.
+2017-01-26 	Richard Forth   Fixed some punctuation issues and color warning.
+2017-01-26 	Richard Forth   Fixed some breakages on Centos 5, 6, 7
+				 - Added a warning that Centos 5 / RHEL 5 is being
+				deprecated / EOLed in March 2017, so after this time
+				I will not be supporting CentOS5 any more.
+2017-01-65 	Richard Forth   Fixed #88 Unable to determine whether Apache is using 
+				worker or prefork
+2017-01-25 	Richard Forth   Fixed #84 Unable to open pidfile.
+				- Changed up the logic to check if the
+				setting is in fact a file BEFORE 'guessing'.
+2017-01-25 	Richard Forth   MPM ITK detection and exit.
+2017-01-25 	Richard Forth   Fixed #85 Wrong MPM information
+2017-01-19 	Richard Forth   Fixed #82 bug with calculations displaying wrong
+				colours
+2017-01-14 	Richard Forth   Updated logo
+				- updated tagline
+				- added a cool intro
+				- Fixed issue #62 MariaDB wrongly detected as
+				MySQL, this also detects percona correctly
+				too.
+				- Finally fixed the #57 issue regarding wonky
+				arrows in the report
+				- Fixed the #66 issue regarding extraneous
+				information in --report output
+				- Fixed futher issues relating to the #66 issue
+				regarding extraneous information in --report output
+				- Added a temp workaround for #69
+				- Fixed #69 by ripping out the cool typing
+				emulation as it breaks on Red Hat based
+				systems less than CentOS7
+				- Fixed #70 missing newline in large log
+				- Fixed #77 CRITICAL should be ADVISORY
+				- Fixed color problems related to #77
+2017-01-13 	Richard Forth   Addressed issue #9 Find Large Logs
+				 - Mopped up some code and made the additional
+				 services check look a bit more polished..
+				 - Addressed issue #25 PHP-FPM Logs
+				 - Addressed issue #48 Plesk logs (warning)
+				 - Addressed issue #49 Detect Plesk
+				 - Addressed issue #50 Detect icPanel
+				 - Code cleanup and output polishing
+				 - Addressed issue #3 Detect Package Updates
+				 - Addressed issue #55 bug in package updates
+				 on debian and ubuntu systems
+				 - Addressed issue #55 bug in package updates
+				 - Addressed issue #56 Detect PHP Updates
+				 - Added more directories to check for large
+				 log files:
+				 	- /usr/local/httpd/logs
+					- /usr/local/apache/logs
+					- /usr/local/apache2/logs
+				Will silently continue if these folders dont
+				exist.
+				- Addressed Issue with wonky arrows, still
+				not happy with it though, columns are out of
+				whack. #OCD, will raise issue and work it
+				proper.
+2017-01-13 	Richard Forth   Addressed issue #34 Added more graceful
+				message when apache[2]ctl is not found.
+2017-01-13 	Richard Forth   Addressed issue #33 Removed Version Number
+2016-12-06 	Richard Forth   Addressed issue #23 Low Uptime Warnings
+2016-12-05 	Richard Forth   Addressed issue #22 Add advisory message for
+				php memory limit of -1
+2016-11-25 	Richard Forth   Addressed issue #6 'Check for and report on
+				PHP Fatal Errors in the logs'
+2016-11-25 	Richard Forth   Merged pull request #20 "fix issues around 
+				maxrequestworkers value" by jboulen.
+2016-11-25 	Richard Forth   Addressed Issue #5, May need further testing
+2016-11-15 	Richard Forth   Addressed Issue #19, Confirmed Fixed.
+2016-09-21 	Richard Forth   Addressed Issue #8, Confirmed Fixed.
+2016-09-21 	Richard Forth   Addressed Issue #15, Confirmed Fixed.
+2016-07-26 	Richard Forth   Bugfix for Issue #11, Confirmed Fixed.
+2016-07-26 	Richard Forth   Bugfix for Issue #11, testing #3. Snagging.
+2016-07-26 	Richard Forth   Bugfix for Issue #11, testing #2. To be confirmed.
+2016-07-26 	Richard Forth   Bugfix for Issue #11, testing. To be confirmed.
+2016-06-24 	Richard Forth   Corrected the codename for Debian 6.0 which is EOL. 
+2016-06-24 	Richard Forth   Tidied up the code for checking ubuntu LTS versions. 
+2016-06-22 	Richard Forth   Tidied up the changelog, lines overflowing corrected. 
+2016-06-22 	Richard Forth   Added exclusion for "mod" in grep for "reached" when 
+                                scanning log files for lines where MaxClients /
+				MaxRequestWorkers limit has been reached. 
+				Thanks to Kaz =) Change going into staging for
+				him to test.
+2016-06-10 	Richard Forth   Cleaned up old code, fixed up old news items and 
+				information messages.
+2016-06-10 	Richard Forth   Removed 'last modified item from script, as this
+				should be handled by github and not hardcoded into
+				the script'.
+2016-05-27 	Richard Forth   Emergency change due to unsafe execution when no
+				apache process is found, this change fixes a bug
+				that was introduced in the change made on
+				2016-05-24.
+2016-05-27 	Richard Forth   Added INFO ITEM about LICENSE.
+2016-05-27 	Richard Forth   Added LICENSE (Apache License Version 2.0). 
+				http://apache2buddy.pl/LICENSE
+2016-05-27 	Richard Forth   Added the notice in the source code as follows:
+
+
+   Copyright 2016 Richard Forth
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+-----
+
+The copyright line reads as my name, because I did a lot of work in making
+this fork a whole new beast, and the previous project was never distributed
+under any official license, I did get the blessing from Gus Maskowitz to
+publish it under the Apache License 2.0.
+
+The purpose of the license is to ensure that free software remains free, not
+as in "free beer" but in "freedom". The freedom to derive new software from
+this and to keep that software "free" too. 
+
+But it is important to acknowldege too, that this is a derivative work from 
+apachebuddy.pl. Even though it is not being maintained any more, I would like 
+to acknowledge the talents of a few people:
+
+Major Hayden - for his inspiring work on MySQLTuner.pl
+Jacob Walcik - who is the credited author of apachebuddy.pl (see the first
+few lines of the original script code at http:// apachebuddy.pl)
+Gus Maskowitz - for his work on the script, though it is no longer maintained
+Will Parsons - for hosting the original script at http://apachebuddy.pl
+
+Here I note that I also do not maintain the old project, this is a complete
+fork and revamp of the original code, and is maintained separately.
+
+These credits will remain and will, in time, be embedded into the code of the
+original script as a mark of respect for the heritage of this code.
+
+Please keep any and all credits in the source code, and if you derive a new
+software from it, by all means add your own credits.
+
+2016-05-24 	Richard Forth   Added INFO ITEM about sha256sums.
+2016-05-24 	Richard Forth   Added sha256sums => 
+				http://apache2buddy.pl/sha256sums.txt
+2016-05-24 	Richard Forth   Changed the way it handles nothing at all 
+				listening on port 80. It now falls back
+				to the process list as if somehing WAS
+				listening on port 80 that was NOT apache.
+2016-05-20 	Richard Forth   Fixed a bug with parent pid detected,
+				reported by J. Ramsey - with thanks! 
+2016-03-03 	Richard Forth   Added MD5Sums + News Item. 
+2016-02-27 	Richard Forth   Added code to display verbose memory
+				usage information, and then bug out with a 
+				critical error if ram is overbooked, before
+				we even start (ie no ram left for apache)
+2016-02-27 	Richard Forth   Added code to display verbose memory usage
+				information, prior to calculations, as I was
+				trying to solve the mystery of negative
+				percentages. Found that if ram is over booked,
+				this skews the results massively.
+2016-02-24 	Richard Forth   Added code to display MaxRequestsPerChild
+				information (prefork mode) 
+2016-02-24 	Richard Forth   Fixed bug out code in preflight checks if
+				apache parent is greater than 50MB, as 
+				I was notified that this wasnt working on
+				ubuntu 12.04 systems.
+2016-02-16 	Richard Forth   Added bug out code in preflight checks if
+				apache parent is greater than 50MB, as 
+				this skews results and calculations.
+2015-10-18 	Richard Forth   Fixed some logic in the Results section. 
+2015-10-18 	Richard Forth   Dropped "new and improved!!!" from the logo.
+				Updated the news items. 
+2015-10-03 	Richard Forth   Changed Recommendations based on an actual
+				valid range (10% of max). Previously anything
+				below the maximim was considered accpetable. 
+				Now there is a minimum (Max / .90) and Max,
+				which is reported in the recommendations.
+2015-10-03 	Richard Forth   Changed layout of memory report, as requested
+				by Luke H.
+2015-10-03 	Richard Forth   Added detection for if maxClients or
+				MaxRequestWorkers has been hit. 
+2015-09-25 	Richard Forth   Added Apache current memory consumption to
+				'Analysing apache memory usage' section. 
+2015-09-23 	Richard Forth   Added Gluster Memory Detection 
+				- Feature Request from P. Steyn
+2015-09-08 	Richard Forth   Minor Cosmetic Changes and Spelling Corrections
+				Removed --PHP option, and included 
+				PHP Memory Limit in Discoveries.
+2015-09-03 	Richard Forth   Minor Cosmetic Changes and Spelling Corrections.
+2015-08-21 	Richard Forth   Minor Bug Fix - Lines 1497 and 1498 added.
+2015-08-06 	Richard Forth	Improvement to code.
+2015-08-06 	Richard Forth	K. Geaney Reported a bug whereby the script
+				would detect itself in the processlist
+				apache2 portion of the script name 
+				apache2buddy.pl is picked up when the script
+				is wgetted and run locally rather than with
+				curl & perl.
+				Added a filter (grep -v "buddy") to prevent this
+				happening in the future.
+2015-08-03 	Richard Forth	L. Hanley Reported a bug whereby the script
+				would error if the apache process was 
+				running as a user that had more than 8 
+				characters. This has been fixed now.
+2015-06-06 	Richard Forth	G. John reported a bug whereby if a server
+				has a certain character set, the apache
+				user is shown as 'apache\x{d}' rather than 
+				'apache', which causes the ps aux line
+				to produce and empty data set which is passed
+				to pmap resulting in a division by
+				zero error, this was also present in the
+				maxclients and serverlimit variables.
+				
+				To fix that I added the following lines of code
+				in various places in the script:
+
+				          # account for 'apache\x{d}' strangeness
+				          $variable =~ s/\x{d}//;
+
+				What this does is replace the control characters
+				that cause this issue, preventing the script from
+				producing a list of PIDs. Better error handling if
+				the list of PIDs are still zero.
+				Where $variable name was one of $apache_user, 
+				$maxclients, or	$serverlimit.
+2015-06-03 	Richard Forth	Switched the IP provider from curlmyip.com to 
+				myip.dnsomatic.com as curlmyip	was becoming very
+				slow to respond, causing unnecessary lag.
+2015-05-27 	Richard Forth	Removed last 5 log entries from output
+				if --report or --noinfo is specified. 
+2015-05-27 	Richard Forth	Removed calculations of maxclients for 
+				worker processes. Instead, I left a 
+				friendly message to go check manually for 
+				backend processes such as PHP-FPM
+				and its pm.max_children directive. 
+				There is no plan to add functionality to
+				check this, as it will become a scope creep.
+2015-05-27 	Richard Forth	Bug Fix reported by C. Piper-Balta in which 
+				the script would produce errors if
+				the process name was /usr/sbin/httpd.worker
+				or /usr/sbin/nginx. The test_process
+				subroutine had some flawed logic which has
+				been fixed now.
+2015-04-23 	Richard Forth	Bug Fixes when selecting --lightbg / -L,
+				not all colours were made bold.
+2015-04-23 	Richard Forth	Bug Fixes when falling back to process list,
+				now picks up the correct port.
+2015-04-23 	Richard Forth	Minor cosmetic changes.
+2015-04-23 	Richard Forth	Added more graceful operation if Varnish is
+				found on port 80 instead of apache, it
+				now is able to go away and find out what 
+				port apache is really listening on, eg 
+				port 8080, and reset itself to go ahead and 
+				continue the scan on the new port.
+2015-04-17 	Richard Forth	Added support for RHEL 7 / Apache 2.4
+2015-04-17 	Richard Forth	Added support for CentOS 7 / Apache 2.4
+2015-04-17 	Richard Forth	Minor bugfixes, made enhancements to reporting, 
+				cleaned up the news items..
+2015-04-17 	Richard Forth	Minor bugfixes, added some missing carriage 
+				returns, nothing major.
+2015-04-16 	Richard Forth	Added support for Scientific Linux 6.6.
+2015-04-15 	Richard Forth	Change project status from UNSTABLE to 
+				STABLE. Please report any errors.
+2015-04-15 	Richard Forth	Added support for Debian 7.
+2015-04-15 	Richard Forth	Added helpful error messages when apache is not
+				found to be started or installed.
+2015-04-15 	Richard Forth	Added support for Debian 6.
+2015-04-15 	Richard Forth	Corrected an error on Ubuntu systems where it 
+				would incorrectly suggest that 'worker' was not 
+				a supported MPM, it is, because sometimes people 
+				will use worker when using php-fpm. 'event' 
+				however is not supported, but I added a
+				nice helpful message if event MPM is detected on 
+				how to switch to a supported MPM. 
+2015-04-15 	Richard Forth	Added better error-handling for missing php package
+				on ubuntu and prints a	helpful message. 
+2015-04-15 	Richard Forth	Added better error-handling for missing modules 
+				on ubuntu 12.04 and prints a helpful message. 
+2015-04-14 	Richard Forth	Added NEWS item, plugging the new support for 
+				Ubuntu systems.
+2015-04-14 	Richard Forth	Removed support for the event MPM.
+2015-04-14 	Richard Forth	Added support for Ubuntu, requires further testing
+				but looking good.
+2015-04-14 	Richard Forth	Added MPM to report section.
+2015-04-13 	Richard Forth	Added hostname and IP address to report section, 
+				this makes a lot of sense. If we're looping through 
+				a server farm we need toidentify each one, right?
+2015-04-13 	Richard Forth	Split "Analysing your memory usage" into 2 sections, 
+				the second section is called "Results". 
+2015-04-13 	Richard Forth	Merged two sections "Pre-Flight Checks" and 
+				"Analysing your apache 	configuration", into 
+				"Performing Auto-Discovery and Pre-Flight Checks" 
+2015-04-13 	Richard Forth	Converting large blocks of print statements: 
+				header done. 
+2015-04-12 	Richard Forth	Fixed some inconsistencies with heading colours. 
+2015-04-12 	Richard Forth	Converting large blocks of print statements
+				into heredocs, to shave off more deadweight.
+				Usage done so far.
+2015-04-12 	Richard Forth	Fixed a bug where it would display warnings
+				about ThreadsPerChild regardless of the model, 
+				I made it so it only displays the warning if 
+				indeed the current model is worker.
+2015-04-12 	Richard Forth	- added --report|r option, awaiting feedback.
+==================================================================================================================
+Previous...
+ - cleaning up code.
+ - switching to ANSI escape codes for colors to cut down the  file size.
+ - generalling getting it stable,
+
