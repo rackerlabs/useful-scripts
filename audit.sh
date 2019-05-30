@@ -18,12 +18,14 @@ EFC='\033[0m'
 # Usage info
 usage() {              # Print script usage function
     echo "Usage: $0 [options]"
-    echo "           -a, --add     <reponame> <url>   Specify name of new repo"
-    echo "           -u, --update  <reponame>         Update existing repo"
-    echo "           -c, --check   <reponame>         Check for updates on existing repo"
-    echo "           -v, --verify  <reponame> [local] Verifies local branch (not been pushed to git)"
+    echo "          -a, --add     <reponame> <url>   Specify name of new repo"
+    echo "          -a, --add     <reponame> <url> -b <release>
+                                           Specify name of new repo and a specific release"
+    echo "          -u, --update  <reponame>         Update existing repo"
+    echo "          -c, --check   <reponame>         Check for updates on existing repo"
+    echo "          -v, --verify  <reponame> [local] Verifies local branch (not been pushed to git)"
     echo ""
-    echo "           -h, --help                      Print help (usage)"
+    echo "          -h, --help                      Print help (usage)"
     exit 1
 }
 
@@ -94,7 +96,11 @@ clone_repo() {
     _new_repo_name="$1"
     _url="$2"
 
-    git subrepo clone "$_url" "$_new_repo_name"
+    if [[ ! $3 = '' ]]; then
+        git subrepo clone "$_url" "$_new_repo_name" --branch "$3"
+    else
+        git subrepo clone "$_url" "$_new_repo_name"
+    fi
 
     # Now verifying
     validate_current_commit "$_new_repo_name" "local"
@@ -333,22 +339,42 @@ while :; do
         ;;
         "-a"|"--add" )
             # Add new subrepo
+            # Check to see if a branch/tag is specified
+            record=''
+            tag=''
+            for i in $@; do
+                if [[ $i == '-b' ]] || [[ $i == '--branch' ]]; then
+                    clone_branch='yes'
+                    record='yes'
+                elif [[ $record == 'yes' ]]; then
+                    tag=$i
+                    break
+                elif [[ $record == '' ]]; then
+                    clone_branch=''
+                fi
+            done
             # Check there isn't a directory/repo there already
-            if [[ $# -eq 3 ]]; then
+            if [[ $# -ge 3 ]] && [[ $# -le 5 ]]; then
                 repo_exist_check "empty" "$2"
                 check_local_branch "$2"
-                clone_repo "$2" "$3"
+                if [[ "$clone_branch" == "yes" ]]; then
+                    clone_repo "$2" "$3" "$tag"
+                else
+                    clone_repo "$2" "$3"
+                fi
                 exit 0
             elif [[ $# -lt 3 ]]; then
                 echo -e "$RED""Too few arguments provided.$EFC"
                 echo
-                echo -e "-a, --add     <reponame> <url>   Specify name of new repo"
+                echo "-a, --add     <reponame> <url>   Specify name of new repo"
+                echo "-a, --add     <reponame> <url> -b <release>"
                 echo
                 exit 1
-            else
+            elif [ ! $clone_branch ]; then
                 echo -e "$RED""Too many arguments provided.$EFC"
                 echo
-                echo -e "-a, --add     <reponame> <url>   Specify name of new repo"
+                echo "-a, --add     <reponame> <url>   Specify name of new repo"
+                echo "-a, --add     <reponame> <url> -b <release>"
                 echo
                 exit 1
             fi
