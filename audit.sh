@@ -18,10 +18,10 @@ EFC='\033[0m'
 unameOut="$(uname -s)"
 case "${unameOut}" in
     Linux*)
-        SHACOMMAND=$( type -p sha1sum )
+        SHACOMMAND="sha1sum"
     ;;
     Darwin*)
-        SHACOMMAND=$( type -p shasum )
+        SHACOMMAND="shasum"
     ;;
     *)
         echo "Unknown OS"
