@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/LukeShirnia/Low_Disk.git
+	branch = master
+	commit = 0b987573391aae086baa8e716084e60a9ff46053
+	parent = 95bff248a3ce0b637963c57e57a03843f3da1586
+	method = merge
+	cmdver = 0.4.0
