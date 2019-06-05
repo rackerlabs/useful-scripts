@@ -15,6 +15,20 @@ RED='\033[0;31m'
 PURPLE='\033[0;35m'
 EFC='\033[0m'
 
+unameOut="$(uname -s)"
+case "${unameOut}" in
+    Linux*)
+        SHACOMMAND="sha1sum"
+    ;;
+    Darwin*)
+        SHACOMMAND="shasum"
+    ;;
+    *)
+        echo "Unknown OS"
+        exit 1
+    ;;
+esac
+
 # Usage info
 usage() {              # Print script usage function
     echo "Usage: $0 [options]"
@@ -158,7 +172,7 @@ validate_current_commit() {
         repo_location="remote"
 
         raw_subrepo="$REPOURL_RAW""$branch_name/$_subrepo_name"
-        subrepo_sha1sum=$(curl -s "$raw_subrepo$selection" | sha1sum | awk '{print $1}' )
+        subrepo_sha1sum=$(curl -s "$raw_subrepo$selection" | ${SHACOMMAND} | awk '{print $1}' )
         script_location="$raw_subrepo$selection"
 
         commit_path="$raw_subrepo"".gitrepo"
@@ -168,7 +182,7 @@ validate_current_commit() {
         "local")  # For branches not yet pushed to github
         branch_name=$(git symbolic-ref --short -q HEAD)
 
-        subrepo_sha1sum=$(sha1sum "$_dir$selection" | awk '{print $1}' )
+        subrepo_sha1sum=$( ${SHACOMMAND} "$_dir$selection" | awk '{print $1}' )
         script_location="$_dir$selection"
 
         commit_path="$_dir"".gitrepo"
@@ -181,7 +195,7 @@ validate_current_commit() {
         repo_location="remote"
 
         raw_subrepo="$REPOURL_RAW""$branch_name/$_subrepo_name"
-        subrepo_sha1sum=$(curl -s "$raw_subrepo$selection" | sha1sum | awk '{print $1}' )
+        subrepo_sha1sum=$(curl -s "$raw_subrepo$selection" | ${SHACOMMAND}  | awk '{print $1}' )
 
         script_location="$raw_subrepo$selection"
         commit_path="$raw_subrepo"".gitrepo"
@@ -193,7 +207,7 @@ validate_current_commit() {
 
     # Find the sha1sum of the original script
     raw_remote=$(echo $_remote | sed 's/github.com/raw.githubusercontent.com/g'  | sed "s/\.git$/\/$_commit/g")
-    remote_sha1sum=$(curl -s "$raw_remote/$selection" | sha1sum | awk '{print $1}' )
+    remote_sha1sum=$(curl -s "$raw_remote/$selection" | ${SHACOMMAND}  | awk '{print $1}' )
 
     echo
     echo "------------------------------------------"
@@ -246,7 +260,7 @@ check_available_updates() {
     _remote=$( awk -F'= ' '/remote/ {print $2}' "$_subrepo_information" )
 
     raw_remote_master=$( echo $_remote | sed 's/github.com/raw.githubusercontent.com/g'  | sed "s/\.git$/\/master\/$selection/g" )
-    raw_remote__master_sha1sum=$(curl -s "$raw_remote_master" | sha1sum | awk '{print $1}' )
+    raw_remote__master_sha1sum=$(curl -s "$raw_remote_master" | ${SHACOMMAND}  | awk '{print $1}' )
 
     echo "------------------------------------------"
     echo -e "$PURPLE""Checking if updates available... (script/commit vs script/master)$EFC"
