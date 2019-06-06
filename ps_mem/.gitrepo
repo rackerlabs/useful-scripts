@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/pixelb/ps_mem.git
+	branch = master
+	commit = cfded41786791d485b4091a04f46e56dda149f1d
+	parent = c760ab00f4fabb395f92842b8239ce360a0ffbc7
+	method = merge
+	cmdver = 0.4.0
