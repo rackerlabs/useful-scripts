@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/LukeShirnia/out-of-memory.git
+	branch = master
+	commit = 31336ad2322bb37d2bcd076a3400f5f8e279ddc1
+	parent = 5b12313530521ba78b3a53a1e64b7f41aa30f6da
+	method = merge
+	cmdver = 0.4.0
