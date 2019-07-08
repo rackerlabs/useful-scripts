@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/pksteyn/php-fpmpal.git
+	branch = master
+	commit = 62740e17d6452f78878d416df84da7e4b17691f0
+	parent = fd7d4ffe6d8e285d4310fff051374c6ef72d1829
+	method = merge
+	cmdver = 0.4.0
