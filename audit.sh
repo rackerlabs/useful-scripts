@@ -328,7 +328,7 @@ After git installation please install git subrepo:
 "git subrepo" does not appear to be installed.
 Please install git subrepo:
                 https://github.com/ingydotnet/git-subrepo'
-    elif echo "$version" "0.4.0" | awk '{ exit !($1 > $2)}'; then
+    elif echo "$version" "0.4.0" | awk '{ exit !($1 < $2)}'; then
        error_message '
 "git subrepo" version is too low
 Please update:
