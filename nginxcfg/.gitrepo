@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/LukeShirnia/nginxcfg.git
+	branch = master
+	commit = 427fe0b92bd8b17a62e12cbf71655cfc6c0f02a1
+	parent = 6fdd86b1babdd153839ae3a0f65cdac1d4919ca4
+	method = merge
+	cmdver = 0.4.1
