@@ -26,7 +26,7 @@ __version__ = '1.0.0'
 
 def options():
     '''Processes commandline arguments. Returns the argparse parser'''
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('-v', '--version', dest='show_version',
                         action='store_true', help='Shows script version')
 
@@ -51,7 +51,13 @@ def options():
     parser.add_argument('-F', '--show-full',
                         dest='show_full_output',
                         action='store_true',
-                        help='show the full user information'
+                        help='Show the full user information'
+                        )
+
+    parser.add_argument('-h', '--help',
+                        dest='help',
+                        action='store_true',
+                        help='Show this help message and exit'
                         )
     return parser
 
@@ -512,18 +518,16 @@ def show_all_users(ARGS):
 
 
 def main():
-    '''Main script execution'''
-    show_header()
-    init_variables()
-
     PARSER = options()
     ARGS = PARSER.parse_args()
 
-    if ARGS.show_version:
-        print(Color.MAGENTA + r"Showing version", Color.RESET)
-        print("")
-        show_version()
+    if ARGS.help:
+        PARSER.print_help()
         sys.exit()
+
+    '''Main script execution'''
+    show_header()
+    init_variables()
 
     if ARGS.show_system_users:
         print(Color.MAGENTA + r"Showing system users", Color.RESET)
