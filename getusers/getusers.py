@@ -17,7 +17,7 @@ import pydoc
 import time
 import struct
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 ###################################
 # Useful variables for the script
@@ -523,6 +523,10 @@ def main():
 
     if ARGS.help:
         PARSER.print_help()
+        sys.exit()
+
+    if ARGS.show_version:
+        show_version()
         sys.exit()
 
     '''Main script execution'''
