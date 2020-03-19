@@ -6,7 +6,7 @@
 [subrepo]
 	remote = https://github.com/LukeJReid/getusers.git
 	branch = master
-	commit = d0b41a6da27392fbf62d4c0e196fbf820c6c9d74
-	parent = 6fdd86b1babdd153839ae3a0f65cdac1d4919ca4
+	commit = 69aedaec32ec53ae5341aeda5d62ac9afa2ad004
+	parent = dd2d6f39e51e8f71b997d2616441f838c5087812
 	method = merge
 	cmdver = 0.4.1
