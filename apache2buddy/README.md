@@ -10,7 +10,7 @@
 
 # landing page
 
-	########### MPORTANT SAFETY ANNOUNCEMENT #################
+	########### IMPORTANT SAFETY ANNOUNCEMENT #################
 	
 	This is the NEW landing page for apache2buddy.pl
 	

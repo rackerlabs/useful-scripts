@@ -218,6 +218,14 @@ our $SKIPPHPFATAL = 0;
 # by default, do not skip updates check 
 our $SKIPUPDATES = 0;
 
+######################
+# MORE OUR VARIABLES #
+######################
+
+# "cache" for os platrofm information: ( distro, version, codename )
+our @os_platform;
+
+
 
 # grab the command line arguments
 GetOptions(
@@ -306,30 +314,65 @@ if ( ! $NOCOLOR ) {
 	$UNDERLINE = ""; # SUPPRESS COLORS
 }
 
-sub get_os_platform_older {
-	our $python;
-	my $raw_platform = `$python -c 'import platform ; print (platform.dist())'`;
-	# ('CentOS Linux', '7.3.1611', 'Core')
-	$raw_platform =~ s/[()']//g;
-	my @platform = split(", ", $raw_platform);
-	my $distro =  @platform[0];
-	my $version = @platform[1];
-	my $codename = @platform[2];
-	return ($distro, $version, $codename);
-}
-
 sub get_os_platform {
-	our $python;
-	my $raw_platform = `$python -c 'import platform ; print (platform.linux_distribution())'`;
-	# ('CentOS Linux', '7.3.1611', 'Core')
-	$raw_platform =~ s/[()']//g;
-	my @platform = split(", ", $raw_platform);
-	my $distro =  @platform[0];
-	# because of trailing spaces in: ('SUSE Linux Enterprise Server ', '12', 'x86_64') we have to trim
-	$distro =~ s/\s+$//;
-	my $version = @platform[1];
-	my $codename = @platform[2];
-	return ($distro, $version, $codename);
+
+        return @main::os_platform if @main::os_platform; # we already know everything
+
+         my @py_scripts = (
+                # platform.linux_distribution() - This function is deprecated since Python 3.5
+                # and removed in Python 3.8. See alternative like the distro package.
+                'import platform; print(platform.linux_distribution())',
+                # platform.dist() -  Deprecated since version 2.6.
+                'import platform; print(platform.dist())',
+                # distro.linux_distribution() - 'distro' is not default installed package
+                'import distro; print(distro.linux_distribution())',
+        );
+
+        # Check for python (new in Debian 9 as it doesnt come with it out of the box)
+        my $py_exists = 0;
+        for my $pyname ( qw / python python3 python2 / ) {
+                my $python = `which $pyname`;
+                chomp( $python );
+                unless ( $python ) {
+                        show_crit_box(); 
+                        print "Unable to locate the '$pyname' binary.\n";
+                        next;
+                }
+
+                $py_exists = 1;
+                if ( ! $NOOK ) { show_ok_box(); print "The '$pyname' binary exists and is available for use: ${CYAN}$python${ENDC}\n" }
+
+                print "VERBOSE: Check OS platform\n" if $VERBOSE;
+
+                for my $pyscript (@py_scripts) {
+                        print "VERBOSE:   $python -c '$pyscript'\n" if $VERBOSE;
+                        my $raw_platform = `$python -c \"$pyscript\"`;
+                        # ('CentOS Linux', '7.3.1611', 'Core')
+                        chomp($raw_platform);
+                        next unless $raw_platform;
+
+                        $raw_platform =~ s/[()']//g;
+                        my ( $distro, $version, $codename ) = split( '\s*,\s+', $raw_platform);
+                        next unless $distro;
+
+                        @main::os_platform = ( $distro, $version, $codename );
+                        return ( $distro, $version, $codename );
+                }
+
+        }
+
+        # we can't determine OS and Version
+        if ( $py_exists ) {
+                show_crit_box(); print "Python scripting failed. Python requires package 'distro' or 'platform' to determine the Operating System and Version.\n";
+        } else {
+                show_crit_box(); print "Unable to locate the any 'python' binary. This script requires python to determine the Operating System and Version.\n";
+                show_info_box(); print "${YELLOW}To fix this make sure the python2 or python3 package is installed.${ENDC}\n";
+        }
+        exit;
+
+        # XXX instead of calling exit() we can:
+        # @main::os_platform = ( 'Unknown Distro', '0.0', '' );
+        # return @main::os_platform;
 }
 
 sub check_os_support {
@@ -955,7 +998,7 @@ sub get_pid {
 	# might return multiple values depending on Apache's listen directives
 	my @pids = `LANGUAGE=en_GB.UTF-8 netstat -ntap | egrep "LISTEN" | grep \":$port \" | awk \'{ print \$7 }\' | cut -d / -f 1`;
 
-	print "VERBOSE: ".@pids." found listening on port 80\n" if $main::VERBOSE;
+	print "VERBOSE: ".@pids." found listening on port $port\n" if $main::VERBOSE;
 
 	# set an initial, invalid PID. 
 	my $pid = 0;;
@@ -1134,7 +1177,7 @@ sub get_apache_uptime {
 
 	# this will return the running time for the given pid in the format 
 	# "days-hours:minutes:seconds"
-	my $uptime = `ps -eo \"\%p \%t\" | grep $pid | grep -v grep | awk \'{ print \$2 }\'`;
+	my $uptime = `ps -eo \"\%p \%t\" | grep \"^[[:space:]]*$pid \" | awk \'{ print \$2 }\'`;
 	chomp($uptime);
 
 	print "VERBOSE: PID passed to uptime function: $pid\n" if $main::VERBOSE;
@@ -1240,6 +1283,16 @@ sub get_php_setting {
 
         # return the value to the main program
         return $result;
+}
+
+sub date {
+	# we can use custom date format: date($my_date_format)
+	my ($format) = @_;
+	# default format is "%Y/%m/%d %H:%M:%S"
+	$format ||= "%Y/%m/%d %H:%M:%S";
+	my $current_date = `date +"$format"`;
+	$current_date = substr($current_date,0,-1);
+	return $current_date;
 }
 
 sub generate_standard_report {
@@ -1362,12 +1415,6 @@ sub generate_standard_report {
 		}
 		# make a logfile entry at /var/log/apache2buddy.log
 		open (LOGFILE, ">>/var/log/apache2buddy.log");
-		sub date {
-	        	my $current_date = `date +"%Y/%m/%d %H:%M:%S"`;
-       			$current_date = substr($current_date,0,-1);
-       			return $current_date;
-        	}
-	
 		if ( our $apache_version =~ m/.*\s*\/2.4.*/) {
         		print LOGFILE (date()." Uptime: \"$uptime\" Model: \"Prefork\" Memory: \"$available_mem MB\" MaxRequestWorkers: \"$maxclients\" Recommended: \"$max_rec_maxclients\" Smallest: \"$apache_proc_smallest MB\" Avg: \"$apache_proc_average MB\" Largest: \"$apache_proc_highest MB\" Highest Pct Remaining RAM: \"$max_potential_usage_pct_remain%\" \($max_potential_usage_pct_avail% TOTAL RAM)\n");
 		} else {
@@ -1382,11 +1429,6 @@ sub generate_standard_report {
 			print "\tApache2buddy does not calculate maxclients for worker model.${ENDC}\n";
 			# make a logfile entry at /var/log/apache2buddy.log
 			open (LOGFILE, ">>/var/log/apache2buddy.log");
-			sub date {
-	        		my $current_date = `date +"%Y/%m/%d %H:%M:%S"`;
-       				$current_date = substr($current_date,0,-1);
-       				return $current_date;
-        		}
         		print LOGFILE (date()." Uptime: \"$uptime\"  Model: \"Worker\" Memory: \"$available_mem MB\" Maxclients: \"$maxclients\" Recommended: \"N\\A\" Smallest: \"$apache_proc_smallest MB\" Avg: \"$apache_proc_average MB\" Largest: \"$apache_proc_highest MB\"\n");
         		close(LOGFILE);
 	}	
@@ -1396,11 +1438,6 @@ sub generate_standard_report {
 			print "\tApache2buddy does not calculate maxclients for worker model.${ENDC}\n";
 			# make a logfile entry at /var/log/apache2buddy.log
 			open (LOGFILE, ">>/var/log/apache2buddy.log");
-			sub date {
-	        		my $current_date = `date +"%Y/%m/%d %H:%M:%S"`;
-       				$current_date = substr($current_date,0,-1);
-       				return $current_date;
-        		}
         		print LOGFILE (date()." Uptime: \"$uptime\"  Model: \"Event\" Memory: \"$available_mem MB\" Maxclients: \"$maxclients\" Recommended: \"N\\A\" Smallest: \"$apache_proc_smallest MB\" Avg: \"$apache_proc_average MB\" Largest: \"$apache_proc_highest MB\"\n");
         		close(LOGFILE);
 	}
@@ -1584,32 +1621,6 @@ sub preflight_checks {
                 if ( ! $NOOK ) { show_ok_box(); print "The utility 'apachectl' exists and is available for use: ${CYAN}$apachectl${ENDC}\n" }
         }
 
-	# check 3.2 
-	# Check for python (new in Debian 9  as it doesnt come with it out of the box)
-	our $python = `which python`;
-	chomp($python);
-
-
-	if ( $python !~ m/.*\/python/ ) {
-		show_crit_box(); 
-		print "Unable to locate the python binary.\n";
-                print "Trying for python3...\n";
-                our $python = `which python3`;
-                chomp($python);
-
-
-                if ( $python !~ m/.*\/python3/ ) {
-                        show_crit_box();
-                        print "Unable to locate the python3 binary. This script requires python to determine the Operating and Version.\n";
-                        show_info_box(); print "${YELLOW}To fix this make sure the python or python3 package is installed.${ENDC}\n";
-                        exit;
-                } else {
-                        if ( ! $NOOK ) { show_ok_box(); print "The 'python' binary exists and is available for use: ${CYAN}$python${ENDC}\n" }
-                }
-	} else {
-		if ( ! $NOOK ) { show_ok_box(); print "The 'python' binary exists and is available for use: ${CYAN}$python${ENDC}\n" }
-	}
-
 	
 
 	# Check 4
@@ -1627,41 +1638,14 @@ sub preflight_checks {
 	# Get OS Name and Version
 	if ( ! $NOINFO ) { show_info_box(); print "We are attempting to discover the operating system type and version number ...\n" }
 	my ($distro, $version, $codename) = get_os_platform();
-	if ( $distro ) { 
-		chomp($distro);
-		chomp($version);
-		chomp($codename);
-		if ( ! $NOINFO ) { show_info_box(); print "Distro: ${CYAN}" . $distro . "${ENDC}\n"}	
-		if ( ! $NOINFO ) { show_info_box(); print "Version: ${CYAN}" . $version . "${ENDC}\n"}	
-		if ( ! $NOINFO ) { show_info_box(); print "Codename: ${CYAN}" . $codename . "${ENDC}\n"}	
-		if ( ! $NOCHKOS ) { 
-			check_os_support($distro, $version, $codename);
-		} else {
-			show_warn_box(); print "${YELLOW}OS Version Checks were skipped by user directive, you may get errors.${ENDC}\n";
-		}
+	if ( ! $NOINFO ) { show_info_box(); print "Distro: ${CYAN}" . $distro . "${ENDC}\n"}
+	if ( ! $NOINFO ) { show_info_box(); print "Version: ${CYAN}" . $version . "${ENDC}\n"}
+	if ( ! $NOINFO ) { show_info_box(); print "Codename: ${CYAN}" . $codename . "${ENDC}\n"}
+	if ( ! $NOCHKOS ) {
+		check_os_support($distro, $version, $codename);
 	} else {
-		# fallback when python fails to deliver - eg on CentOS5 which is EOL anyway, we get:
-		# Traceback (most recent call last):
-		#   File "<string>", line 1, in ?
-		#   AttributeError: 'module' object has no attribute 'linux_distribution'
-		#
-		# This is dues to Python 2.4.3 being used, which is too old.
-		if ( ! $NOINFO ) { print "${YELLOW}Couldnt determine OS version as your python version is too old, trying older python code...${ENDC}\n" }
-		my ($distro, $version, $codename) = get_os_platform_older();
-		if ( $distro ) { 
-			chomp($distro);
-			chomp($version);
-			chomp($codename);
-			if ( ! $NOINFO ) { show_info_box(); print "Distro: ${CYAN}" . $distro . "${ENDC}\n"}	
-			if ( ! $NOINFO ) { show_info_box(); print "Version: ${CYAN}" . $version . "${ENDC}\n"}	
-			if ( ! $NOINFO ) { show_info_box(); print "Codename: ${CYAN}" . $codename . "${ENDC}\n"}	
-			if ( ! $NOCHKOS ) { 
-				check_os_support($distro, $version, $codename);
-			} else {
-				show_warn_box(); print "${YELLOW}OS Version Checks were skipped by user directive, you may get errors.${ENDC}\n";
-			}
-		}
-	}		 
+		show_warn_box(); print "${YELLOW}OS Version Checks were skipped by user directive, you may get errors.${ENDC}\n";
+	}
 
 	# get our hostname
 	our $servername = get_hostname();
@@ -1978,6 +1962,10 @@ sub preflight_checks {
 	if ( our $apache_version =~ m/.*\s*\/2.4.*/) {
 		our $maxclients = find_master_value(\@config_array, $model, 'maxrequestworkers');
 		if($maxclients eq 'CONFIG NOT FOUND') {
+      # Fallback to MaxClients if MaxRequestsPerWorker not found
+      $maxclients = find_master_value(\@config_array, $model, 'maxclients');
+    }
+		if($maxclients eq 'CONFIG NOT FOUND') {
 			if ( ! $NOWARN ) { show_warn_box; print "MaxRequestWorkers directive not found, assuming default values.\n" }
 			if ( $model eq "prefork") {
 				# Default for prefork - see http://httpd.apache.org/docs/2.4/mod/mpm_common.html#maxrequestworkers
@@ -2100,6 +2088,13 @@ sub preflight_checks {
 			if ( ! $NOWARN ) { show_warn_box; print "MaxRequestsPerChild directive not found.\n" }
 		} else {
 			if ( ! $NOINFO ) { show_info_box();  print "Your MaxRequestsPerChild setting is ${CYAN}$maxrequestsperchild${ENDC}.\n" }
+		}	
+		# Quick fix for issue #304 - needs adiitional logic for polishing output, for now just report on both.
+		our $maxconnectionsperchild = find_master_value(\@config_array, $model, 'MaxConnectionsPerChild');
+		if($maxconnectionsperchild eq 'CONFIG NOT FOUND') {
+			if ( ! $NOWARN ) { show_warn_box; print "MaxConnectionsPerChild directive not found.\n" }
+		} else {
+			if ( ! $NOINFO ) { show_info_box();  print "Your MaxConnectionsPerChild setting is ${CYAN}$maxconnectionsperchild${ENDC}.\n" }
 		}
 	}		
 
@@ -2169,7 +2164,7 @@ sub detect_package_updates {
 		$package_update = `yum check-update | egrep "^httpd|^php"`;
 	}
 	if ($package_update) {
-		if ( ! $package_update =~ /Failed/ || /Error/ ) {
+		if ( $package_update !~ /Failed|Error/) {
 			if ( ! $NOWARN ) {
 				show_crit_box(); print "${RED}Apache and / or PHP has a pending package update available.${ENDC}\n";
 				print "${YELLOW}$package_update${ENDC}";
@@ -2550,18 +2545,21 @@ sub get_hostname {
         }
 }
 
-
 sub get_ip {
-	our $curl = `which curl`;
-	chomp ($curl);
-	if ( $curl eq '' ) {
-	 	show_crit_box;
-		print "Cannot find the 'curl' executable.";
-		exit;
-	} else {
-		our $ip = `$curl -s myip.dnsomatic.com`;
-		return $ip;
-	}
+        our $curl = `which curl`;
+        chomp ($curl);
+        if ( $curl eq '' ) {
+                show_crit_box;
+                print "Cannot find the 'curl' executable.";
+                exit;
+        } else {
+                our $ip = `$curl -s myip.dnsomatic.com`;
+                if ($ip =~ /429 Too Many Requests/) {
+                        return "x.x.x.x";
+                } else {
+                        return $ip;
+                }
+        }
 }
 
 ########################

@@ -2,6 +2,21 @@ CHANGELOG
 
 When		Who		What
 ======================================================================================
+2020-03-27	Richard Forth	Closes #319.
+                                myip.dnsomatic.com Too Many Requests, error
+				suppression. 
+
+				NOTES/ERRATA: 
+				Commit references #316, meant to be #319.
+2020-03-14	"wiechu"	Updates to the way OS Distribution is detected.
+2020-03-12      "wiechu"	Few cosmetic changes
+2020-03-12      Richard Forth /	Fixed Package management Issue - issue #312
+		"wiechu"
+2020-03-10      Mark Hyde   	PR to address backward compatibilty with
+				MaxClients directive in apache 2.4
+2019-12-28      Richard Forth   Quick fix for issue #304
+				Report MaxConnectionsPerChild as well as
+				MaxRequestsPerChild.
 2019-04-17      Richard Forth   Ubuntu 14.04 went EOL. 
 2019-02-14      Richard Forth   Closes #250
 				Make the serverlimit apply only to prefork
