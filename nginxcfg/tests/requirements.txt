@@ -1,0 +1,6 @@
+pytest==3.2.3
+pytest-cov==2.5.1
+mock==2.0.0
+pyfakefs==3.2
+pycodestyle==2.5.0
+pylint
