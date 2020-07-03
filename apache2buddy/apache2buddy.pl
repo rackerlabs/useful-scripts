@@ -321,12 +321,26 @@ sub get_os_platform {
          my @py_scripts = (
                 # platform.linux_distribution() - This function is deprecated since Python 3.5
                 # and removed in Python 3.8. See alternative like the distro package.
-                'import platform; print(platform.linux_distribution())',
+                "try:
+	import platform
+	print(platform.linux_distribution())
+except AttributeError as e:
+	pass",
                 # platform.dist() -  Deprecated since version 2.6.
-                'import platform; print(platform.dist())',
+                "try:
+	import platform
+	print(platform.dist())
+except AttributeError as e:
+	pass",
                 # distro.linux_distribution() - 'distro' is not default installed package
-                'import distro; print(distro.linux_distribution())',
-        );
+                "try:
+	import distro
+	print(distro.linux_distribution())
+except AttributeError as e:
+	pass
+except ModuleNotFoundError as e:
+	pass"); # Note the pass is required because perl needs an empty result for error handling internally switching from python back to perl.
+                # We just want python to die quietly in a corner for aestehetic reasons.
 
         # Check for python (new in Debian 9 as it doesnt come with it out of the box)
         my $py_exists = 0;
@@ -407,11 +421,11 @@ sub check_os_support {
 	my %suseol = map { $_ => 1 } @suse_os_list;
 
 	# https://wiki.debian.org/DebianReleases
-	my @debian_supported_versions = ('8','9');
+	my @debian_supported_versions = ('8','9','10');
 	my %dsv = map { $_ => 1 } @debian_supported_versions;
 
 	# https://www.ubuntu.com/info/release-end-of-life
-	my @ubuntu_supported_versions = ('16.04','18.04');
+	my @ubuntu_supported_versions = ('16.04','18.04','20.04');
 	my %usv = map { $_ => 1 } @ubuntu_supported_versions;
 
 	if (exists($sol{$distro})) {
@@ -851,19 +865,19 @@ sub find_master_value {
 # three different outputs: average usage across all processes, the memory usage
 # by the largest process, or the memory usage by the smallest process
 sub get_memory_usage {
-	my ($process_name, $apache_user, $search_type) = @_;
+	my ($process_name, $apache_user_running, $search_type) = @_;
 	
 	my (@proc_mem_usages, $result);
 
 	print "VERBOSE: Get '".$search_type."' memory usage\n" if $main::VERBOSE;
 
 	# get a list of the pid's for apache running as the appropriate user
-	my @pids = `ps aux | grep $process_name | grep -v root | grep $apache_user | awk \'{ print \$2 }\'`;
+	my @pids = `ps aux | grep $process_name | grep "^$apache_user_running\\s" | awk \'{ print \$2 }\'`;
 
         # if length of @pids is still zero then die with an error.
 	if (@pids == 0) {
                 show_crit_box(); print ("Error getting a list of PIDs\n");
-		print ("DEBUG -> Process Name: ".$process_name."\nDEBUG -> Apache_user: ".$apache_user."\nDEBUG -> Search Type: ".$search_type."\n\n");
+		print ("DEBUG -> Process Name: ".$process_name."\nDEBUG -> Apache_user: ".$apache_user_running."\nDEBUG -> Search Type: ".$search_type."\n\n");
 		exit 1;
 	} 
 	# figure out how much memory each process is using
@@ -1094,6 +1108,27 @@ sub get_apache_conf_file {
 	return $apache_conf_file;
 }
 
+# this will return the apache default pid file
+sub get_apache_pid_file {
+	our $apache_pid_file;
+	my ( $process_name ) = @_;
+	if ( $process_name eq "/usr/sbin/apache2") {
+		# use apache2ctl instead ...
+		$apache_pid_file = `apache2ctl -V 2>&1 | grep \"DEFAULT_PIDLOG\"`;
+		$apache_pid_file =~ s/.*=\"(.*)\"/$1/;
+		chomp($apache_pid_file);
+	} else {
+		$apache_pid_file = `$process_name -V 2>&1 | grep \"DEFAULT_PIDLOG\"`;
+		$apache_pid_file =~ s/.*=\"(.*)\"/$1/;
+		chomp($apache_pid_file);
+	}
+	# return the apache configuration file, or 0 if there is no result
+	if ( $apache_pid_file eq '' ) {
+		$apache_pid_file = 0;
+	}
+
+	return $apache_pid_file;
+}
 
 sub itk_detect {
 	my ($model) = @_;
@@ -1113,7 +1148,14 @@ sub get_apache_model {
                 # In apache2, worker / prefork / event are no longer compiled-in.
                 # Instead, with is a loaded in module
                 # differing from httpd / httpd24u's process directly, in ubuntu we need to run apache2ctl.
+                if ($VERBOSE) { print "VERBOSE: Looking for model, first trying 'apache2ctl'.\n" }
                 $model = `apache2ctl -M 2>&1 | egrep "worker|prefork|event|itk"`;
+		# see issue #334, apachectl was our fall back but now we need to also fall back to apache2.
+		my @array_models = ('worker','prefork','event','itk'); 
+		if (!(grep $model, @array_models)) { 
+                	if ($VERBOSE) { print "VERBOSE: model not found, falling back to 'apache2', last try...\n" }
+                	$model = `apache2 -M 2>&1 | egrep "worker|prefork|event|itk"`;
+		}
                 # if we detect itk module, we need to stop immediately:
                 if ($VERBOSE) { print "VERBOSE: $model" }
                 if ($VERBOSE) { print "VERBOSE: ITK DETECTTOR STARTED\n" }
@@ -1129,7 +1171,16 @@ sub get_apache_model {
                 if ($VERBOSE) { print "VERBOSE: Return Value: $model\n" }
                 return $model;
         } else {
+                if ($VERBOSE) { print "VERBOSE: Looking for model, first trying 'apachectl'.\n" }
                 $model = `apachectl -M 2>&1 | egrep "worker|prefork|event|itk"`;
+		# Gotcha in Fedora 32  - so likely to appear in later versions of apache (circa 2.4.43)
+		# see issue #334, apachectl was our fall back but now we need to also fall back to httpd.
+		my @array_models = ('worker','prefork','event','itk'); 
+		if (!(grep $model, @array_models)) { 
+                	if ($VERBOSE) { print "VERBOSE: model not found, falling back to 'httpd', last try...\n" }
+                	$model = `httpd -M 2>&1 | egrep "worker|prefork|event|itk"`;
+		}
+		our $model;
                 if ($VERBOSE) { print "VERBOSE: $model" }
                 if ($VERBOSE) { print "VERBOSE: ITK DETECTOR STARTED\n" }
                 itk_detect($model);
@@ -1327,13 +1378,14 @@ sub generate_standard_report {
 	print "Apache2buddy.pl report for server: ${CYAN}$servername${ENDC} \(${CYAN}$public_ip_address${ENDC}\):\n";
 	# show what we're going to use to generate our numbers
 	print "\nSettings considered for this report:\n"; # exempt from NOINFO directive. 
-	if ( $apache_uptime[0] == "0" ) { 
-		if ( ! $NOWARN ) {
-			show_crit_box(); print "${RED}*** LOW UPTIME ***${ENDC}.\n"; 
-			show_advisory_box(); print "${YELLOW}The following recommendations may be misleading - apache has been restarted within the last 24 hours.${ENDC}\n\n";
+	if ( ! $NOCHKPID) {
+		if ( $apache_uptime[0] == "0" ) { 
+			if ( ! $NOWARN ) {
+				show_crit_box(); print "${RED}*** LOW UPTIME ***${ENDC}.\n"; 
+				show_advisory_box(); print "${YELLOW}The following recommendations may be misleading - apache has been restarted within the last 24 hours.${ENDC}\n\n";
+			}
 		}
 	}
-
 	printf ("%-62s ${CYAN}%d %2s${CYAN}\n",   "\tYour server's physical RAM:", $available_mem, "MB"); # exempt from NOINFO directive.
 	my $memory_remaining = $available_mem - $mysql_memory_usage_mbytes - $java_memory_usage_mbytes - $redis_memory_usage_mbytes - $memcache_memory_usage_mbytes - $varnish_memory_usage_mbytes - $phpfpm_memory_usage_mbytes- $gluster_memory_usage_mbytes;
 	printf ("${BOLD}%-62s${ENDC} ${CYAN}%d %2s${ENDC}\n",   "\tRemaining Memory after other services considered:", $memory_remaining, "MB"); # exempt from NOINFO directive.
@@ -1686,7 +1738,13 @@ sub preflight_checks {
                         if ( ! $NOINFO ) { show_info_box; print "Apache is actually listening on port ${CYAN}$real_port${ENDC}\n" }
                         if ( ! $NOINFO ) { show_info_box; print "The process running on port ${CYAN}$real_port${ENDC} is ${CYAN}$apache_version${ENDC}.\n" }
 			# Issue #252 apache 2.2 is EOL
-			if ( ! $NOINFO ) { show_crit_box; print "${YELLOW}Apache 2.2 is End Of Life. For more Information, see ${CYAN}https://httpd.apache.org/.${ENDC}" }
+			# Issue #325 bug - no sanity checking 
+			my $eol_version = "2.2";
+			if ( index($apache_version,$eol_version) != -1) {
+				# index returns -1 if the string is NOT present, if it is present, the following will be run:
+				# ie we only care if the version is detected as being 2.2 - refer to issue #325 as above mentioned.
+				if ( ! $NOINFO ) { show_crit_box; print "${YELLOW}Apache 2.2 is End Of Life. For more Information, see ${CYAN}https://httpd.apache.org/.${ENDC}" }
+			}
                 }
 	} else {	
 		# now we get the name of the process running with the specified pid
@@ -1785,134 +1843,163 @@ sub preflight_checks {
 	# Check 13	
 	# get the entire config, including included files, into an array
 	our @config_array = build_config_array($full_apache_conf_file_path,$apache_root);
-	# determine what user apache runs as 
-	our $apache_user = find_master_value(\@config_array, $model, 'user');
+	# determine what user apache runs as (according to the config file)
+	our $apache_user_config = find_master_value(\@config_array, $model, 'user');
         # account for 'apache\x{d}' strangeness
-        $apache_user =~ s/\x{d}//;
-        $apache_user =~ s/^\s*(.*?)\s*$/$1/;; # address issue #19, strip whitespace from both sides.
-	unless ($apache_user eq "apache" or $apache_user eq "www-data") {
-                my $apache_userid = `id -u $apache_user`;
-                chomp($apache_userid);
+        $apache_user_config =~ s/\x{d}//;
+        $apache_user_config =~ s/^\s*(.*?)\s*$/$1/;; # address issue #19, strip whitespace from both sides.
+	unless ($apache_user_config eq "apache" or $apache_user_config eq "www-data") {
+                my $apache_config_userid = `id -u $apache_user_config`;
+                chomp($apache_config_userid);
                 # account for 'apache\x{d}' strangeness
-                $apache_user =~ s/\x{d}//;
-                show_warn_box(); print ("${RED}Non-standard apache set-up, apache is running as UID: ${CYAN}$apache_userid${RED} (${CYAN}$apache_user${RED}). Expecting UID 48 ('apache' or 'www-data').${ENDC}\n");
-		if ( ! $NOINFO ) { show_info_box(); print "Apache runs as ${CYAN}$apache_user${ENDC}.\n" }
-        }	
+                $apache_user_config =~ s/\x{d}//;
+		show_warn_box(); print ("${RED}Non-standard apache set-up, apache is configured to run as UID: ${CYAN}$apache_config_userid${RED} (${CYAN}$apache_user_config${RED}). Expecting UID 48 ('apache' or 'www-data').${ENDC}\n");
+                
+	}
+
+	our $process_name;
+	# determine what user apache runs as (according to the processlist)
+	our $apache_user_running = `ps aux | grep $process_name | grep -v ^root | awk \'{ print \$1 }\' | uniq`;
+	chomp($apache_user_running);
+
+	# compare the running user with the config user:
+	if ( $apache_user_running eq  $apache_user_config) {
+		if ( ! $NOOK ) { show_ok_box(); print "Running user (${CYAN}$apache_user_running${ENDC}) matches config (${CYAN}$apache_user_config${ENDC}).\n" }
+		
+	} else {
+		if ( ! $NOWARN ) { show_warn_box(); print "Running user (${CYAN}$apache_user_running${ENDC}) does NOT match config (${CYAN}$apache_user_config${ENDC}).\n" } 
+	}
 	
-	if (length($apache_user) > 8) {
+	if (length($apache_user_running) > 8) {
 		# Now we have to keep the first 7 characters and change the 8th character to a + sign, eg 'developer' becomes 'develop+'
-		my $original_user = $apache_user;
-		$apache_user = substr($original_user, 0, 7)."+";
+		my $original_user = $apache_user_running;
+		$apache_user_running = substr($original_user, 0, 7)."+";
 	}
 
 	# Check 13.1
 	# Determine the size of the parent process
 	# Bug Out if greater than 50MB
-	our $pidfile_cfv = find_master_value(\@config_array, $model, 'pidfile');
-	if ( ! $NOINFO ) { show_info_box; print "pidfile setting is ${CYAN}$pidfile_cfv${ENDC}.\n" } 
-	# addressing issue #84, I realised this whole block of code is guessing, I understand why, but its not sane.
-	# for example what we need to do is first check if the path is a relative path or absolute path.
-	# If it is an absolute path, lets check that first, which will cut out a lot of unnecessary code, 
-	# otherwise we can start guessing based on common relative paths.
-	#  Fix for Issue #222 strip any quotes from returned string
-	#  "/var/run/httpd.pid" becomes /var/run/httpd.pid
-	if ($VERBOSE) { print "VERBOSE: Stripping any quotes from string ...\n" }
-	if ($VERBOSE) { print "VERBOSE: BEFORE ($pidfile_cfv).\n" }
-	$pidfile_cfv =~ s/^"(.*)"$/$1/;
-	$pidfile_cfv =~ s/^'(.*)'$/$1/;
-	if ($VERBOSE) { print "VERBOSE: AFTER ($pidfile_cfv).\n" }
-	if ( -f $pidfile_cfv ) {
-		our $pidfile =$pidfile_cfv;
-	} else {
-		if ($pidfile_cfv eq "run/httpd.pid") {
-			# it could be in a couple of places, so lets test!
-			if (-f "/var/run/httpd/httpd.pid") {
-				our $pidfile = "/var/run/httpd/httpd.pid";
-			} elsif (-f "/run/httpd/httpd.pid") {
-				our $pidfile = "/run/httpd/httpd.pid";
-			} elsif (-f "/var/run/httpd.pid") {
-				our $pidfile = "/var/run/httpd.pid";
-			} else {
-				if ( ! $NOINFO ) { show_crit_box; print "${RED}Unable to locate pid file${ENDC}. Exiting.\n" } 
-				exit;
-			}
-		} elsif ($pidfile_cfv eq "/var/run/apache2/apache2\$SUFFIX.pid") {
-			our $pidfile = "/var/run/apache2/apache2.pid";
-		} elsif ($pidfile_cfv eq "/var/run/apache2\$SUFFIX.pid") {
-			our $pidfile = "/var/run/apache2.pid";
-		} elsif ($pidfile_cfv eq "/var/run/apache2\$SUFFIX/apache2.pid") {
-			our $pidfile = "/var/run/apache2/apache2.pid";
-		} else {
-			# revert to a find command as a last ditch effort to find the pid
-			if ($VERBOSE) { print "VERBOSE: Looking for pid file ...\n" }
-			if ( -d "/var/run/apache2") {
-				our $pidguess = `find /var/run/apache2 | grep pid`;
-			} elsif ( -d "/run/httpd") {
-				our $pidguess = `find /run/httpd | grep pid`;
-			} elsif ( -d "/var/run/httpd") {
-				our $pidguess = `find /var/run/httpd | grep pid`;
-			} elsif ( -d "/opt/apache2/run") {
-				our $pidguess = `find /opt/apache2/run | grep pid`;
-			} else {
-				show_crit_box; print "${RED}Unable to locate pid file${ENDC}. Exiting.\n";
-				exit;
-			}
-			our $pidguess;
-			chomp($pidguess);
-			if ( -f $pidguess ) {
-				our $pidfile = $pidguess;
-				if ($VERBOSE) { print "VERBOSE: Located pidfile at $pidfile.\n" }
-			} else {
-				show_crit_box; print "${RED}Unable to locate pid file${ENDC}. Exiting.\n";
-				exit;
-			}
-		}
-	}
-	
-	our $pidfile;
-	if (-f $pidfile) {
-		if ( ! $NOINFO ) { show_info_box; print "Actual pidfile is ${CYAN}$pidfile${ENDC}.\n" } 
-	} else {
-		if ( ! $NOINFO ) { show_crit_box; print "${RED}Unable to open pid file $pidfile${ENDC}. Exiting.\n" } 
-		exit;
-	}
-	# get pid
-	our $pidfile;
-	our $parent_pid = `cat $pidfile`;
-	chomp($parent_pid);
-	if ( ! $NOINFO ) { show_info_box; print "Parent PID: ${CYAN}$parent_pid${ENDC}.\n" }
+	# Issue #309 encapsulate check 13.1 as a whole
+	# to respect the --no-check-pid option 
 	if ( ! $NOCHKPID) {
-		if ($VERBOSE) { print "VERBOSE: output of 'pmap' is different depending on distro!\n" }
-		my $ppid_mem_usage;
-		if (ucfirst($distro) eq "SUSE Linux Enterprise Server" ) {
-			$ppid_mem_usage = `LANGUAGE=en_GB.UTF-8 pmap -d $parent_pid | egrep "writable-private" | awk \'{ print \$1 }\'`;
-		} else {
-			$ppid_mem_usage = `LANGUAGE=en_GB.UTF-8 pmap -d $parent_pid | egrep "writeable/private" | awk \'{ print \$4 }\'`;
+		our $pidfile_cfv = find_master_value(\@config_array, $model, 'pidfile');
+		if ( ! $NOINFO ) { show_info_box; print "pidfile setting is ${CYAN}$pidfile_cfv${ENDC}.\n" } 
+		# addressing issue #84, I realised this whole block of code is guessing, I understand why, but its not sane.
+		# for example what we need to do is first check if the path is a relative path or absolute path.
+		# If it is an absolute path, lets check that first, which will cut out a lot of unnecessary code, 
+		# otherwise we can start guessing based on common relative paths.
+		#  Fix for Issue #222 strip any quotes from returned string
+		#  "/var/run/httpd.pid" becomes /var/run/httpd.pid
+		if ($VERBOSE) { print "VERBOSE: Stripping any quotes from string ...\n" }
+		if ($VERBOSE) { print "VERBOSE: BEFORE ($pidfile_cfv).\n" }
+		$pidfile_cfv =~ s/^"(.*)"$/$1/;
+		$pidfile_cfv =~ s/^'(.*)'$/$1/;
+		if ($VERBOSE) { print "VERBOSE: AFTER ($pidfile_cfv).\n" }
+		our $pidfile_pdv = get_apache_pid_file($process_name);
+		if ( substr($pidfile_pdv, 0, 1) ne "/" ) {
+			$pidfile_pdv = $apache_root."/".$pidfile_pdv;
 		}
-		$ppid_mem_usage =~ s/K//;
-		chomp($ppid_mem_usage);
-		if ($ppid_mem_usage > 50000) {
-			show_crit_box; print "${RED}Memory usage of parent PID is greater than 50MB: $ppid_mem_usage Kilobytes${ENDC}.\n";
-			show_advisory_box; print "${YELLOW}For more information, see ${CYAN}https://github.com/richardforth/apache2buddy/wiki/50MB-Parent-PID-Issue${ENDC}\n";
-			show_advisory_box; print "${YELLOW}If you are desperate, try ${CYAN}-P${YELLOW} or ${CYAN}--no-check-pid${ENDC}${YELLOW}.${ENDC}\n";
-			show_info_box; print "Exiting.\n";
+		if ( -f $pidfile_cfv ) {
+			our $pidfile =$pidfile_cfv;
+		} elsif ( -f $pidfile_pdv ) {
+			our $pidfile = $pidfile_pdv;
+		} else {
+			if ($pidfile_cfv eq "run/httpd.pid") {
+				# it could be in a couple of places, so lets test!
+				if (-f "/var/run/httpd/httpd.pid") {
+					our $pidfile = "/var/run/httpd/httpd.pid";
+				} elsif (-f "/run/httpd/httpd.pid") {
+					our $pidfile = "/run/httpd/httpd.pid";
+				} elsif (-f "/var/run/httpd.pid") {
+					our $pidfile = "/var/run/httpd.pid";
+				} else {
+					if ( ! $NOINFO ) { show_crit_box; print "${RED}Unable to locate pid file${ENDC}. Exiting.\n" } 
+					exit;
+				}
+			} elsif ($pidfile_cfv eq "/var/run/apache2/apache2\$SUFFIX.pid") {
+				our $pidfile = "/var/run/apache2/apache2.pid";
+			} elsif ($pidfile_cfv eq "/var/run/apache2\$SUFFIX.pid") {
+				our $pidfile = "/var/run/apache2.pid";
+			} elsif ($pidfile_cfv eq "/var/run/apache2\$SUFFIX/apache2.pid") {
+				our $pidfile = "/var/run/apache2/apache2.pid";
+			} else {
+				# revert to a find command as a last ditch effort to find the pid
+				if ($VERBOSE) { print "VERBOSE: Looking for pid file ...\n" }
+				if ( -d "/var/run/apache2") {
+					our $pidguess = `find /var/run/apache2 | grep pid`;
+				} elsif ( -d "/run/httpd") {
+					our $pidguess = `find /run/httpd | grep pid`;
+				} elsif ( -d "/var/run/httpd") {
+					our $pidguess = `find /var/run/httpd | grep pid`;
+				} elsif ( -d "/opt/apache2/run") {
+					our $pidguess = `find /opt/apache2/run | grep pid`;
+				} else {
+					show_crit_box; print "${RED}Unable to locate pid file${ENDC}. Exiting.\n";
+					exit;
+				}
+				our $pidguess;
+				chomp($pidguess);
+				if ( -f $pidguess ) {
+					our $pidfile = $pidguess;
+					if ($VERBOSE) { print "VERBOSE: Located pidfile at $pidfile.\n" }
+				} else {
+					show_crit_box; print "${RED}Unable to locate pid file${ENDC}. Exiting.\n";
+					exit;
+				}
+			}
+		}
+
+		our $pidfile;
+		if (-f $pidfile) {
+			if ( ! $NOINFO ) { show_info_box; print "Actual pidfile is ${CYAN}$pidfile${ENDC}.\n" } 
+		} else {
+			if ( ! $NOINFO ) { show_crit_box; print "${RED}Unable to open pid file $pidfile${ENDC}. Exiting.\n" } 
 			exit;
-		} else {
-			if ( ! $NOOK ) { show_ok_box; print "Memory usage of parent PID is less than 50MB: ${CYAN}$ppid_mem_usage Kilobytes${ENDC}.\n" }
 		}
+		# get pid
+		our $pidfile;
+		our $parent_pid = `cat $pidfile`;
+		chomp($parent_pid);
+		if ( ! $NOINFO ) { show_info_box; print "Parent PID: ${CYAN}$parent_pid${ENDC}.\n" }
+		if ( ! $NOCHKPID) {
+			if ($VERBOSE) { print "VERBOSE: output of 'pmap' is different depending on distro!\n" }
+			my $ppid_mem_usage;
+			if (ucfirst($distro) eq "SUSE Linux Enterprise Server" ) {
+				$ppid_mem_usage = `LANGUAGE=en_GB.UTF-8 pmap -d $parent_pid | egrep "writable-private" | awk \'{ print \$1 }\'`;
+			} else {
+				$ppid_mem_usage = `LANGUAGE=en_GB.UTF-8 pmap -d $parent_pid | egrep "writeable/private" | awk \'{ print \$4 }\'`;
+			}
+			$ppid_mem_usage =~ s/K//;
+			chomp($ppid_mem_usage);
+			if ($ppid_mem_usage > 50000) {
+				show_crit_box; print "${RED}Memory usage of parent PID is greater than 50MB: $ppid_mem_usage Kilobytes${ENDC}.\n";
+				show_advisory_box; print "${YELLOW}For more information, see ${CYAN}https://github.com/richardforth/apache2buddy/wiki/50MB-Parent-PID-Issue${ENDC}\n";
+				show_advisory_box; print "${YELLOW}If you are desperate, try ${CYAN}-P${YELLOW} or ${CYAN}--no-check-pid${ENDC}${YELLOW}.${ENDC}\n";
+				show_info_box; print "Exiting.\n";
+				exit;
+			} else {
+				if ( ! $NOOK ) { show_ok_box; print "Memory usage of parent PID is less than 50MB: ${CYAN}$ppid_mem_usage Kilobytes${ENDC}.\n" }
+			}
+		}
+	} else {
+		if ( ! $NOINFO ) { show_info_box; print "Parent PID checks skipped because --no-check-pid option used.{$ENDC}.\n" }
 	}
 
 	# Check 13.2
 	# determine the Apache uptime
-	our $parent_pid;
-	our @apache_uptime = get_apache_uptime($parent_pid);
-	
-	if ( ! $NOINFO ) { show_info_box(); print "Apache has been running ${CYAN}$apache_uptime[0]${ENDC}d ${CYAN}$apache_uptime[1]${ENDC}h ${CYAN}$apache_uptime[2]${ENDC}m ${CYAN}$apache_uptime[3]${ENDC}s.\n" }
-	if ( $apache_uptime[0] == "0" ) { 
-		if ( ! $NOWARN ) { 
-			show_crit_box(); print "${RED}*** LOW UPTIME ***${ENDC}.\n"; 
-			show_advisory_box(); print "${YELLOW}The following recommendations may be misleading - apache has been restarted within the last 24 hours.${ENDC}\n";
+	if ( ! $NOCHKPID) {
+		our $parent_pid;
+		our @apache_uptime = get_apache_uptime($parent_pid);
+		
+		if ( ! $NOINFO ) { show_info_box(); print "Apache has been running ${CYAN}$apache_uptime[0]${ENDC}d ${CYAN}$apache_uptime[1]${ENDC}h ${CYAN}$apache_uptime[2]${ENDC}m ${CYAN}$apache_uptime[3]${ENDC}s.\n" }
+		if ( $apache_uptime[0] == "0" ) { 
+			if ( ! $NOWARN ) { 
+				show_crit_box(); print "${RED}*** LOW UPTIME ***${ENDC}.\n"; 
+				show_advisory_box(); print "${YELLOW}The following recommendations may be misleading - apache has been restarted within the last 24 hours.${ENDC}\n";
+			}
 		}
+	} else {
+		if ( ! $NOINFO ) { show_info_box; print "Uptime checks skipped because --no-check-pid option used.{$ENDC}.\n" }
 	}
 
 	# check 13.3
@@ -2120,6 +2207,7 @@ sub preflight_checks {
 
 	# Check 17d : Large Logs in /var/log
 	systemcheck_large_logs("/var/log/httpd");
+	systemcheck_large_logs("/var/log/httpd24");
 	systemcheck_large_logs("/var/log/apache2");
 	systemcheck_large_logs("/var/log/php-fpm");
 	systemcheck_large_logs("/usr/local/apache/logs");
@@ -2247,6 +2335,8 @@ sub detect_php_fatal_errors {
 
 	if ($process_name eq "/usr/sbin/httpd" ) {
 		our $SCANDIR = "/var/log/httpd/";
+        } elsif ($process_name eq "/opt/rh/httpd24/root/usr/sbin/httpd" ) {
+		our $SCANDIR = "/var/log/httpd24/";
         } elsif ($process_name eq "/usr/local/apache/bin/httpd" ) {
 		our $SCANDIR = "/usr/local/apache/logs/";
         } else {
@@ -2313,6 +2403,8 @@ sub detect_maxclients_hits {
 	our $hit = 0;
 	if ($process_name eq "/usr/sbin/httpd") {
 		our $maxclients_hits = `grep -i reached /var/log/httpd/error_log | egrep -v "mod" | tail -5`;
+	} elsif ($process_name eq "/opt/rh/httpd24/root/usr/sbin/httpd") {
+		our $maxclients_hits = `grep -i reached /var/log/httpd24/error_log | egrep -v "mod" | tail -5`;
 	} elsif ($process_name eq "/usr/local/apache/bin/httpd") {
 		our $maxclients_hits = `grep -i reached /usr/local/apache/logs/error_log | egrep -v "mod" | tail -5`;
 	} elsif ($process_name eq "/opt/apache2/bin/httpd") {
@@ -2583,10 +2675,16 @@ preflight_checks();
 our $hostname;
 our $public_ip_address;
 our @config_array;
-our $apache_user;
+our $apache_user_running;
+our $apache_user_config;
 our $model;
 our @apache_uptime;
-our $uptime = "$apache_uptime[0]d $apache_uptime[1]h $apache_uptime[2]m $apache_uptime[3]s";
+if ( ! $NOCHKPID) {
+	our $uptime = "$apache_uptime[0]d $apache_uptime[1]h $apache_uptime[2]m $apache_uptime[3]s";
+} else {
+	our $uptime = "SKIPPED";
+}
+our $uptime;
 our $process_name;
 our $available_mem;
 our $maxclients;
@@ -2631,9 +2729,10 @@ if ( ! $NOINFO ) { show_info_box(); print "${CYAN}apache2${ENDC} " }
         our $apache2_memory_usage_mbytes = 0;
 }
 
-my $apache_proc_highest = get_memory_usage($process_name, $apache_user, 'high');
-my $apache_proc_lowest = get_memory_usage($process_name, $apache_user, 'low');
-my $apache_proc_average = get_memory_usage($process_name, $apache_user, 'average');
+our $apache_user_running;
+my $apache_proc_highest = get_memory_usage($process_name, $apache_user_running, 'high');
+my $apache_proc_lowest = get_memory_usage($process_name, $apache_user_running, 'low');
+my $apache_proc_average = get_memory_usage($process_name, $apache_user_running, 'average');
 
 
 if ( $model eq "prefork") {

@@ -2,6 +2,36 @@ CHANGELOG
 
 When		Who		What
 ======================================================================================
+2020-07-02	Richard Forth	Addresses issue #342
+				- fix grep out root on remi installs
+				- Closes #342
+2020-06-24	Richard Forth	Attempt to address issue #300
+				Report and compare running and configured
+				apache user.
+2020-06-19	Richard Forth	Forced apache2buddy to respect the
+				--no-check-pid option.
+				Closes #309
+2020-06-19	Richard Forth	Added support for Ubuntu 20.04
+				Closes #331
+2020-06-19	Richard Forth	Added a sanity check for issue #325
+				Closes #325
+2020-06-19	Richard Forth	Added a fix up working towards apache 2.4.43
+				- issue with apachectl, first spotted in
+				Fedora 32
+				- added fallback to httpd.
+2020-06-19	Richard Forth	Added a fix up working towards ubuntu 20.04
+				support.
+				- requires further testing
+				- use '--skip-os-version-check' for now.
+				- This may also fix some issues in Fedora 32. 
+2020-06-17	Richard Forth	Added support for Debian 10.
+                                - Added 10 to list of supported debian
+				versions.
+2020-06-17	Richard Forth	Added Dockerfile for Debian10 testing.
+2020-06-16	Richard Forth	Added Dockerfile for CentOS7 testing.
+2020-05-31	"pes-soft"	Fix error getting the list of pids introduced in #327
+2020-05-31	"pes-soft"	Add compatibility for Apache 2.4 from CentOS7
+				Software Collections #327
 2020-03-27	Richard Forth	Closes #319.
                                 myip.dnsomatic.com Too Many Requests, error
 				suppression. 
