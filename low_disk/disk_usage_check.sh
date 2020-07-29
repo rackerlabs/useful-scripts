@@ -59,9 +59,10 @@ logical_volumes() {
     fi
 }
 lsof_check_open_deleted() {  # Check top 5 open deleted files function over 500MB
-    if [ "$( echo -e ${1} | awk '/REG/ && /deleted/ {x=3;y=1; print $(NF-x) "  " $(NF-y) }' | sort -nr | uniq  | awk '{ if($1 > 524288000 ) print $1/1048576, "MB ", $NF }')" ]; then
+    open_files=$( lsof 2>/dev/null | awk '/REG/ && /deleted/ {x=3;y=1; print $(NF-x) "  " $(NF-y) }' | sort -nr | uniq  | awk '{ if($1 > 524288000 ) print $1/1048576, "MB ", $NF }')
+    if [ "$open_files" ]; then
         PrintHeader "Top 5 Open DELETED Files over 500MB"
-        echo -e "$1" | awk '/REG/ && /deleted/ {x=3;y=1; print $(NF-x) "  " $(NF-y) }' | sort -nr | uniq | awk '{ if($1 > 524288000 ) print $1/1048576, "MB ", $NF }'  | head -5;
+        echo -e "$open_files"  | head -5;
     else
         NotRun+=("lsof_large_open_deleted");
     fi
@@ -170,11 +171,8 @@ largest_files
 logical_volumes
 
 if  [ "$( which lsof 2>/dev/null )" ]; then
-    # Store lsof results in a var to reuse
-    lsof_results="$( lsof 2>/dev/null )";
-
     # Check open deleted filed
-    lsof_check_open_deleted "$lsof_results";
+    lsof_check_open_deleted
 else
     NotRun+=("lsof_large_open_deleted");
 fi
