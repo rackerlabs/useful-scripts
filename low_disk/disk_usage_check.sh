@@ -51,19 +51,19 @@ logical_volumes() {
     vgs_output=$( vgs $(df -h $filesystem | awk '/dev/ {print $1}'| cut -d\- -f1| cut -d\/ -f4) &>/dev/null )
     return_code=$?
 
-    if [ $return_code -le 0 ] && [ $( vgs | wc -l ) -gt 1  ]; then
+    if [ $return_code -le 0 ] && [ $( vgs 2>/dev/null | wc -l ) -gt 1 ]; then
         PrintHeader "Volume Group Usage"
         vgs $(df -h $filesystem | grep dev | awk '{print $1}'| cut -d\- -f1| cut -d\/ -f4)
     else
         NotRun+=("vgs")
     fi
 }
-lsof_check_number() {  # Check deleted files function
-    if [ "$( lsof | awk '/REG/ && !/stat: No such file or directory/ && !/DEL/ {if ($NF=="(deleted)") {x=3;y=1} else {x=2;y=0}; {print $(NF-x) "  " $(NF-y) } }'  | awk '{ if($1 > 1000000000 ) print $1/1048576, "MB ", $NF }'  )" ] && [ "$( which lsof 2>/dev/null )" ]; then
-        PrintHeader "Open Deleted Files Over 1GB"
-        lsof | awk '/REG/ && !/stat: No such file or directory/ && !/DEL/ {if ($NF=="(deleted)") {x=3;y=1} else {x=2;y=0}; {print $(NF-x) "  " $(NF-y) } }'  | sort -n -u  | awk '{ if($1 > 1000000000 ) print $1/1048576, "MB ", $NF }' | tail -5 | head -5 ;
+lsof_check_open_deleted() {  # Check top 5 open deleted files function over 500MB
+    if [ "$( echo -e ${1} | awk '/REG/ && /deleted/ {x=3;y=1; print $(NF-x) "  " $(NF-y) }' | sort -nr | uniq  | awk '{ if($1 > 524288000 ) print $1/1048576, "MB ", $NF }')" ]; then
+        PrintHeader "Top 5 Open DELETED Files over 500MB"
+        echo -e "$1" | awk '/REG/ && /deleted/ {x=3;y=1; print $(NF-x) "  " $(NF-y) }' | sort -nr | uniq | awk '{ if($1 > 524288000 ) print $1/1048576, "MB ", $NF }'  | head -5;
     else
-        NotRun+=("lsof_large")
+        NotRun+=("lsof_large_open_deleted");
     fi
 }
 home_rack() {         # Check disk usage in /home/rack
@@ -101,8 +101,8 @@ NotRun() {           # Print a list of commands not run at the end of the script
         "lsof" )
             echo "[CHECK]   lsof not found, cannot check 'Open Deleted Files'"
         ;;
-        "lsof_large" )
-            echo "[OK]      No deleted files over 1GB"
+        "lsof_large_open_deleted" )
+            echo "[OK]      No open DELETED files over 500MB"
         ;;
         "home_rack" )
             printf "[OK]      /home/rack smaller than 1GB: $(($rack / 1024)) MB\n"
@@ -169,8 +169,15 @@ largest_files
 # Check to see if logical volumes are being used
 logical_volumes
 
-# Check if lsof is installed
-lsof_check_number
+if  [ "$( which lsof 2>/dev/null )" ]; then
+    # Store lsof results in a var to reuse
+    lsof_results="$( lsof 2>/dev/null )";
+
+    # Check open deleted filed
+    lsof_check_open_deleted "$lsof_results";
+else
+    NotRun+=("lsof_large_open_deleted");
+fi
 
 # Run home_rack function to check disk usage
 home_rack
@@ -183,4 +190,3 @@ echo $BREAK
 echo
 
 exit 0
-
