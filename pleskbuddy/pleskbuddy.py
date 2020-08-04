@@ -32,13 +32,6 @@ def options():
     return psa_parser
 
 
-# Check if Plesk is installed
-try:
-    CHECK_PSA = open('/usr/local/psa/version', 'r')
-except IOError as ex:
-    sys.exit('It doesn\'t look like Plesk is installed!')
-
-
 class Color(object):
     RED = '\033[31m\033[1m'
     GREEN = '\033[32m\033[1m'
@@ -113,6 +106,12 @@ def php_handler():
 
 
 def main():
+    # Check if Plesk is installed
+    try:
+        _ = open('/usr/local/psa/version', 'r')
+    except IOError as ex:
+        sys.exit('It doesn\'t look like Plesk is installed!')
+    
     if PSA_ARGS.show_version:
         show_version()
     elif PSA_ARGS.subscription_list:
