@@ -6,7 +6,7 @@
 [subrepo]
 	remote = https://github.com/dsgnr/postfixbuddy.git
 	branch = master
-	commit = 556aeb33b52bd87d57ea7afc3daa54ddbf09eda8
-	parent = f67dfc653d44cb586ae1d802b6f993720725de41
+	commit = 2dfbeebe413fce6b4e5cc65f0e8c16e7c7499ebc
+	parent = ecf46d8251d40e3640ab83a37f52fa708211b922
 	method = merge
-	cmdver = 0.4.0
+	cmdver = 0.4.1
