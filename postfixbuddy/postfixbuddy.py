@@ -13,7 +13,7 @@ import subprocess
 from subprocess import call
 
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 
 def get_options():
@@ -50,6 +50,7 @@ def get_options():
 
 # All variables defined in this script reply on finding the queue_directory.
 # This defines the PF_DIR variable which is called later on.
+PF_DIR = ""
 try:
     GET_QUEUE_DIR = subprocess.Popen(['/usr/sbin/postconf',
                                       '-h', 'queue_directory'],
