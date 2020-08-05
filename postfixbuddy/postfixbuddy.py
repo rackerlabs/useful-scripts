@@ -58,8 +58,8 @@ try:
     OUTPUT, ERROR = GET_QUEUE_DIR.communicate()
     if OUTPUT:
         PF_DIR = OUTPUT.split()[0]
-except OSError as ex:
-    sys.exit('Unable to find Postfix queue directory!')
+except OSError:
+    pass
 
 
 class COLOR:
@@ -198,6 +198,10 @@ def delete_by_search():
 
 
 def main():
+    # If the PF_DIR is empty, Postfix is either not installed, or broke'd
+    if not PF_DIR:
+        sys.exit('Unable to find Postfix queue directory!')
+
     if ARGS.show_version:
         return show_version()
     if ARGS.list_queues:
