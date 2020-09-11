@@ -7,8 +7,8 @@ BREAK="============================================================"
 NotRun=()              # Array to store all commands not run during script
 
 PrintFirstHeader(){
-    if [[ $bbcode = 'True' ]]; then  
-        echo -ne "\n$BREAK \n \t == $1 == \n$BREAK \n\n";
+    if [[ $bbcode = 'True' ]] && [[ "$inode" != "True" ]]; then
+        echo -ne "\n$BREAK \n \t == [b] $1 [/b]== \n$BREAK \n\n";
         echo "[code]"
     else
         echo -ne "\n$BREAK \n \t == $1 == \n$BREAK \n\n";
@@ -25,16 +25,40 @@ PrintHeader() {        # Common header used throughout script
     fi
 }
 usage() {              # Print script usage function
-    echo "Usage: $0 [-f] [-b] [-h]"
-    echo "           -f filesystem        Specify a Filesystem"
-    echo "           -b                   Print with bbcode"
-    echo "           -h                   Print help (usage)"
+    echo "Usage: $0 [-f] [-i] [-b] [-h]"
+    echo "           -i, --inode                    Display Inode breakdown"
+    echo "           -f, --filesystem <filesystem>  Specify a Filesystem"
+    echo "           -b, --bbcode                   Print with bbcode"
+    echo "           -h, --help                     Print help (usage)"
     exit 1
+}
+start_time() {
+    intStartTime=$(date +%s)
+    PrintFirstHeader "Server Time at start"
+    if [[ $bbcode = 'True' ]] && [[ "$inode" == "True" ]]; then
+        echo "[code]"
+    fi
+    date
+}
+end_time() {
+    intEndTime=$(date +%s);
+    intDuration=$((intEndTime-intStartTime));
+    PrintHeader "Elapsed Time"
+    printf '%dh:%dm:%ds\n' $(($intDuration/3600)) $(($intDuration%3600/60)) $(($intDuration%60));
+
+    PrintHeader "Server Time at completion"
+    date;
+    if [[ $bbcode = 'True' ]]; then
+        echo "[/code]"
+    fi
 }
 filesystem_overview() {
     df -PTh $filesystem;
     echo
     df -PTi $filesystem;
+    if [[ $bbcode = 'True' ]]; then
+        echo "[/code]"
+    fi
 }
 large_directories() {
     if [[ ! $( du -hcx --max-depth=2 $filesystem 2>/dev/null | grep -P '^([0-9]\.*)*G(?!.*(\btotal\b|\./$))' ) ]]; then
@@ -114,10 +138,73 @@ NotRun() {           # Print a list of commands not run at the end of the script
         esac
     done
 }
+check_inodes() {
+    intNumFiles=20;
+    intDepth=5;
+    strFsMount=$(df -P $filesystem | awk '$1 !~ /Filesystem/ {print $6}');
+
+    resize 2&> /dev/null;
+
+    start_time
+
+    PrintHeader "Inode Information for [ $strFsMount ]"
+
+    df -PTi $strFsMount | column -t;
+    strFsDev=$(df -P $PWD | awk '$0 !~ /Filesystem/ {print $1}');
+    PrintHeader "Storage device behind filesystem [ $strFsMount ]"
+    echo $strFsDev;
+    PrintHeader "Top inode Consumers on [ $strFsMount ]"
+
+    awk '{ printf "%11s \t %-30s\n", $1, $2 }' <(echo "inode-Count Path");
+    awk '{ printf "%11'"'"'d \t %-30s\n", $1, $2 } ' <(
+     strMounts="$(findmnt -o TARGET -rn | sed 's/^\s*/\^/g' | sed 's/$/\$|/g' | tr -d '\n' | sed 's/|$/\n/')";
+           find $strFsMount -maxdepth $intDepth -xdev -type d -print0 2>/dev/null | while IFS= read -rd '' i;
+               do if ! echo $i | grep -E "$strMounts";
+                   then echo "$(find "$i" -xdev | wc -l ) $i ";
+               fi;
+           done | sort -n -r | head -n $intNumFiles
+    ) ;
+
+    PrintHeader "Bytes per Inode format for [ $strFsMount ]"
+    echo "$(printf "%.1f\n" $(echo "$(tune2fs -l $strFsDev | awk -F ": *" '$1 ~ /Inode count/ { inodecount = $2 }; $1 == "Block count" {printf "%s", $2}; $1 == "Block size" {printf "%s", " * " $2 " / " inodecount };' | tr -d '\n') /1024" | bc)) KB per inode"'!';
+
+    PrintHeader "Disk space [ $strFsMount ]"
+    filesystem_overview
+
+    end_time
+
+}
+
+
+# Allow for long options. Code based off https://stackoverflow.com/a/30026641
+for arg in "$@"; do
+  shift
+  case "$arg" in
+    "--help")
+        set -- "$@" "-h"
+        ;;
+    "--inode")
+        set -- "$@" "-i"
+        ;;
+    "--bbcode")
+        set -- "$@" "-b"
+        ;;
+    "--filesystem")
+        set -- "$@" "-f"
+        ;;
+    "--"*)
+        echo "Invalid option: ${arg}" 1>&2
+        usage ${arg}
+        exit 2
+        ;;
+    *)
+        set -- "$@" "$arg"
+  esac
+done
 
 
 # Checking the script arguments and assigning the appropriate $filesystem
-while getopts ":f:hb" opt; do
+while getopts ":f:ihb" opt; do
     case ${opt} in
     f )
         filesystem=$OPTARG
@@ -125,13 +212,16 @@ while getopts ":f:hb" opt; do
     b )
         bbcode='True'
         ;;
+    i )
+        inode='True'
+        ;;
     \? )
         echo "Invalid option: $OPTARG" 1>&2
         usage
         exit 1
         ;;
     : )
-        echo "Invalid option: -$OPTARG requires an argument" 1>&2
+        echo "Invalid option: -f, --filesystem requires an argument" 1>&2
         exit 1
         ;;
     h )
@@ -157,31 +247,34 @@ echo
 
 PrintFirstHeader "$filesystem Filesystem Information"
 
-filesystem_overview
-
-PrintHeader "Largest Directories"
-
-large_directories
-
-PrintHeader "Largest Files"
-
-largest_files
-
-# Check to see if logical volumes are being used
-logical_volumes
-
-if  [ "$( which lsof 2>/dev/null )" ]; then
-    # Check open deleted filed
-    lsof_check_open_deleted
+# If inode is specified, we only want to get a breakdown of the systems inodes
+if [[ "$inode" = "True" ]]; then
+    echo "Checking Inodes. Please note this could take a while to run..."
+    check_inodes
+# If inode is not specified, run a normal filesystem breakdown
 else
-    NotRun+=("lsof_large_open_deleted");
+    filesystem_overview
+    start_time
+    PrintHeader "Largest Directories"
+    large_directories
+    PrintHeader "Largest Files"
+    largest_files
+    # Check to see if logical volumes are being used
+    logical_volumes
+
+    if  [ "$( which lsof 2>/dev/null )" ]; then
+        # Check open deleted filed
+        lsof_check_open_deleted
+    else
+        NotRun+=("lsof_large_open_deleted");
+    fi
+
+    # Run home_rack function to check disk usage
+    home_rack
+    # Print commands/sections not run
+    NotRun
+    end_time
 fi
-
-# Run home_rack function to check disk usage
-home_rack
-
-# Print commands/sections not run
-NotRun
 
 echo
 echo $BREAK
