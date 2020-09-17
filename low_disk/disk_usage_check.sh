@@ -15,10 +15,18 @@ PrintFirstHeader(){
     fi
 }
 PrintHeader() {        # Common header used throughout script
-    if [[ $bbcode = 'True' ]]; then
+    if [[ "$bbcode" = "True" ]] && [[ "$2" == "NoOpen" ]]; then
         echo "[/code]"
         echo
-        echo -ne "$BREAK \n \t == $1 == \n$BREAK \n\n";
+        echo -ne "$BREAK \n \t == [b] $1 [/b] == \n$BREAK \n\n";
+    elif [[ "$bbcode" = "True" ]] && [[ "$2" == "NoClose" ]]; then
+        echo
+        echo -ne "$BREAK \n \t == [b] $1 [/b] == \n$BREAK \n\n";
+        echo '[code]'
+    elif [[ "$bbcode" = "True" ]]; then
+        echo "[/code]"
+        echo
+        echo -ne "$BREAK \n \t == [b] $1 [/b] == \n$BREAK \n\n";
         echo '[code]'
     else
         echo -ne "\n$BREAK \n \t == $1 == \n$BREAK \n\n";
@@ -43,7 +51,7 @@ start_time() {
 end_time() {
     intEndTime=$(date +%s);
     intDuration=$((intEndTime-intStartTime));
-    PrintHeader "Elapsed Time"
+    PrintHeader "Elapsed Time" "NoClose"
     printf '%dh:%dm:%ds\n' $(($intDuration/3600)) $(($intDuration%3600/60)) $(($intDuration%60));
 
     PrintHeader "Server Time at completion"
@@ -109,10 +117,7 @@ home_rack() {         # Check disk usage in /home/rack
     fi
 }
 NotRun() {           # Print a list of commands not run at the end of the script
-    if [[ $bbcode = 'True' ]]; then
-        echo "[/code]"
-    fi
-    echo -ne "\n$BREAK \n \t == "OK Check List" == \n$BREAK \n\n";
+    PrintHeader "OK Checklist" "NoOpen"
     echo "The following have been checked and are ok: "
     echo
 
