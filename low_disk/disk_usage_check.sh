@@ -6,27 +6,22 @@ BREAK="============================================================"
 
 NotRun=()              # Array to store all commands not run during script
 
-PrintFirstHeader(){
-    if [[ $bbcode = 'True' ]] && [[ "$inode" != "True" ]]; then
-        echo -ne "\n$BREAK \n \t == [b] $1 [/b]== \n$BREAK \n\n";
-        echo "[code]"
-    else
-        echo -ne "\n$BREAK \n \t == $1 == \n$BREAK \n\n";
-    fi
-}
 PrintHeader() {        # Common header used throughout script
-    if [[ "$bbcode" = "True" ]] && [[ "$2" == "NoOpen" ]]; then
+    if [[ "$bbcode" = "True" ]] && [[ "$2" == "NoTags" ]]; then
+        echo
+        echo -ne "$BREAK \n \t ==[b] $1 [/b]== \n$BREAK \n\n";
+    elif [[ "$bbcode" = "True" ]] && [[ "$2" == "NoOpen" ]]; then
         echo "[/code]"
         echo
-        echo -ne "$BREAK \n \t == [b] $1 [/b] == \n$BREAK \n\n";
+        echo -ne "$BREAK \n \t ==[b] $1 [/b]== \n$BREAK \n\n";
     elif [[ "$bbcode" = "True" ]] && [[ "$2" == "NoClose" ]]; then
         echo
-        echo -ne "$BREAK \n \t == [b] $1 [/b] == \n$BREAK \n\n";
+        echo -ne "$BREAK \n \t ==[b] $1 [/b]== \n$BREAK \n\n";
         echo '[code]'
     elif [[ "$bbcode" = "True" ]]; then
         echo "[/code]"
         echo
-        echo -ne "$BREAK \n \t == [b] $1 [/b] == \n$BREAK \n\n";
+        echo -ne "$BREAK \n \t ==[b] $1 [/b]== \n$BREAK \n\n";
         echo '[code]'
     else
         echo -ne "\n$BREAK \n \t == $1 == \n$BREAK \n\n";
@@ -42,10 +37,7 @@ usage() {              # Print script usage function
 }
 start_time() {
     intStartTime=$(date +%s)
-    PrintFirstHeader "Server Time at start"
-    if [[ $bbcode = 'True' ]] && [[ "$inode" == "True" ]]; then
-        echo "[code]"
-    fi
+    PrintHeader "Server Time at start" "NoClose"
     date
 }
 end_time() {
@@ -250,14 +242,14 @@ echo
 
 ##############################################################################################
 
-PrintFirstHeader "$filesystem Filesystem Information"
-
 # If inode is specified, we only want to get a breakdown of the systems inodes
 if [[ "$inode" = "True" ]]; then
+    PrintHeader "$filesystem Filesystem Information" "NoTags"
     echo "Checking Inodes. Please note this could take a while to run..."
     check_inodes
 # If inode is not specified, run a normal filesystem breakdown
 else
+    PrintHeader "$filesystem Filesystem Information" "NoClose"
     filesystem_overview
     start_time
     PrintHeader "Largest Directories"
