@@ -6,7 +6,7 @@
 [subrepo]
 	remote = https://github.com/LukeShirnia/Low_Disk.git
 	branch = master
-	commit = e082e2d7b46a1c6ef4828f9d54524a387ec1c5c5
-	parent = 2814f11ffe56fad25bd87ff7734d2886626e5a3e
+	commit = 92dca879629f15891fc5a963f426fb1fcced1e7b
+	parent = 26fc5def139d07c1d767490213a16218a6d99425
 	method = merge
 	cmdver = 0.4.1

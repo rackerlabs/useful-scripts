@@ -1,89 +1,209 @@
 # Low_Disk
 
-This disk usage script is designed to gather information on a Linux devices filesystem usage and report on:
-- Filesystem Information (Space and Inode usage)
+This disk usage script is designed to gather information on a Linux devices filesystem.
+You can either run a breakdown of a filesystem `disk usage` or `inode usage`.
+
+## Disk Usage Breadown Summary
+- Filesystem Information Overview
 - Largest Directories
 - Largest Files
 - Volume group space
 - Large Open Files
 - /home/rack usage
 
-Use the `-b` flag for output with bbcode tags
+## Inode Usage Breakdown Summary
+- Filesystem Information Overview
+- Storage Device Behind Filesystem
+- Top Inode Consumers
+- Bytes Per Inode
+- Disk space usage
+- Elapsed Time (time taken to calculate breakdown)
+- Server time as script completion
 
-## Usage ##
+
+## Help
+```
+Usage: disk_usage_check.sh [-f] [-i] [-b] [-h]
+           -i, --inode                    Display Inode breakdown
+           -f, --filesystem <filesystem>  Specify a Filesystem
+           -b, --bbcode                   Print with bbcode
+           -h, --help                     Print help (usage)
+```
+
+## Disk Usage Breadown
 
 ```
-Usage: disk_usage_check.sh [-f] [-b] [-h]
-           -f filesystem        Specify a Filesystem
-           -b                   Print with bbcode
-           -h                   Print help (usage)
-```
+$ ./disk_usage_check.sh
 
-## Example Output ##
-
-
-```
 ============================================================ 
  	 == / Filesystem Information == 
 ============================================================ 
 
-Filesystem                         Type  Size  Used Avail Use% Mounted on
-/dev/mapper/vglocal20170715-root00 ext4  130G  8.9G  121G   7% /
+Filesystem              Type  Size  Used Avail Use% Mounted on
+/dev/mapper/fedora-root ext4  146G   59G   80G  43% /
 
-Filesystem                         Type  Inodes  IUsed   IFree IUse% Mounted on
-/dev/mapper/vglocal20170715-root00 ext4 8634368 229822 8404546    3% /
+Filesystem              Type  Inodes   IUsed   IFree IUse% Mounted on
+/dev/mapper/fedora-root ext4 9732096 1346900 8385196   14% /
+
+============================================================ 
+ 	 == Server Time at start == 
+============================================================ 
+
+Fri 11 Sep 12:23:57 BST 2020
 
 ============================================================ 
  	 == Largest Directories == 
 ============================================================ 
 
-8.5G  /
-3.6G  /var
-3.4G  /usr
-2.7G  /var/cache
-1.4G  /opt
-1.1G  /usr/local
+59G   /
+30G   /var
+25G   /var/lib
+11G   /home
+8.9G  /home/luke
+8.7G  /usr
+8.1G  /root
+8.0G  /root/backups_desktop
+4.2G  /var/log
+3.4G  /usr/share
 
 ============================================================ 
  	 == Largest Files == 
 ============================================================ 
 
-253.23M  /var/cache/yum/x86_64/7Server/rhel-x86_64-server-7/gen/primary.xml.sqlite
-250.77M  /var/cache/yum/x86_64/7Server/rhel-x86_64-server-7/gen/filelists.xml
-220.10M  /var/cache/yum/x86_64/7Server/rhel-x86_64-server-optional-7/gen/filelists.xml
-199.96M  /var/cache/yum/x86_64/7Server/rhel-x86_64-server-7/gen/primary.xml
-162.35M  /var/cache/yum/x86_64/7Server/rhel_base/gen/primary_db.sqlite
-157.98M  /var/lib/rpm/Packages
-139.54M  /var/cache/yum/x86_64/7Server/rs-epel/gen/filelists.xml
-137.99M  /var/cache/yum/x86_64/7Server/rhel-x86_64-server-7/gen/filelists.xml.sqlite
-101.13M  /usr/lib/locale/locale-archive
-100M     /var/lib/mysql/ib_logfile1
-100M     /var/lib/mysql/ib_logfile0
-90.38M   /var/cache/yum/x86_64/7Server/rhel-x86_64-server-optional-7/gen/filelists.xml.sqlite
-68.21M   /opt/dell/srvadmin/sbin/lx32/invcol
-63.64M   /var/cache/yum/x86_64/7Server/rs-epel/gen/filelists.xml.sqlite
-63.02M   /opt/dell/srvadmin/lib64/openmanage/jre/lib/rt.jar
-59.26M   /opt/dell/srvadmin/lib64/openmanage/jre/lib/amd64/libjfxwebkit.so
-55.68M   /var/cache/yum/x86_64/7Server/rs-epel/gen/filelists_db.sqlite
-43.55M   /opt/dell/srvadmin/sbin/lx64/invcol
-42.85M   /var/cache/yum/x86_64/7Server/rhel-x86_64-server-7/packages/kernel-3.10.0-693.el7.x86_64.rpm
-37.30M   /var/cache/yum/x86_64/7Server/rhel-x86_64-server-7/packages/kernel-3.10.0-514.26.2.el7.x86_64.rpm
+1061.86M  /home/luke/Downloads/Streetlight.Online.mp4
+640.12M   /root/backups_desktop/error.log                                                                                                                           
+535.58M   /root/backups_desktop/daily/test/home/luke/development/github/git_Luke/out-of-memory/messages                                               
+535.58M   /home/luke/development/github/git_Luke/out-of-memory/messages                                                                               
+505.55M   /root/backups_desktop/daily/desktop.2020-08-28-15:30:01.tar.gz.gpg                                                                                   
+503.56M   /root/backups_desktop/daily/desktop.2020-08-29-15:30:01.tar.gz.gpg                                                                                   
+467.61M   /root/backups_desktop/daily/desktop.2020-09-09-15:30:02.tar.gz.gpg                                                                                   
+459.72M   /root/backups_desktop/daily/desktop.2020-09-08-15:30:01.tar.gz.gpg                                                                                   
+457.75M   /root/backups_desktop/daily/desktop.2020-09-02-15:30:01.tar.gz.gpg                                                                                   
+455.59M   /root/backups_desktop/daily/desktop.2020-09-01-15:30:01.tar.gz.gpg                                                                                   
+455.38M   /root/backups_desktop/daily/desktop.2020-09-07-15:30:02.tar.gz.gpg                                                                                   
+453.94M   /root/backups_desktop/weekly/desktop.2020-09-04-15:00:02.tar.gz.gpg                                                                                  
+453.93M   /root/backups_desktop/daily/desktop.2020-09-04-15:30:01.tar.gz.gpg                                                                                   
+453.27M   /root/backups_desktop/daily/desktop.2020-09-03-15:30:01.tar.gz.gpg                                                                                   
+412.92M   /root/backups_desktop/daily/test/test.tar.gz                                                                                                              
+300.00M   /root/backups_desktop/daily/test/home/luke/development/github/git_Luke/out-of-memory/oom_logs/large                                         
+300.00M   /root/backups_desktop/daily/test/home/luke/development/github/git_Luke/oom_new_notgit/oom_logs/messages.verylarge                           
+300.00M   /home/luke/development/github/git_Luke/out-of-memory/oom_logs/large                                                                         
+300M      /home/luke/development/github/git_Luke/oom_new_notgit/oom_logs/messages.verylarge                                                           
+230.55M   /usr/share/atom/resources/app.asar                                                                                                                        
 
 ============================================================ 
  	 == Volume Group Usage == 
 ============================================================ 
 
-  VG              #PV #LV #SN Attr   VSize   VFree
-  vglocal20170715   1   3   0 wz--n- 135.63g 4.00m
+  VG     #PV #LV #SN Attr   VSize   VFree
+  fedora   1   1   0 wz--n- 148.43g    0 
 
 ============================================================ 
  	 == OK Check List == 
-============================================================
+============================================================ 
 
 The following have been checked and are ok: 
 
-[OK]      No deleted files over 1GB
-[OK]      /home/rack smaller than 1GB: 58 MB
+[OK]      No open DELETED files over 500MB
+[WARNING] /home/rack does not appear to exist
+
+============================================================ 
+ 	 == Elapsed Time == 
+============================================================ 
+
+0h:0m:56s
+
+============================================================ 
+ 	 == Server Time at completion == 
+============================================================ 
+
+Fri 11 Sep 12:24:53 BST 2020
+
+============================================================
+```
+## Inode Usage Breadown
+```
+$ ./disk_usage_check.sh --inode
+
+
+============================================================ 
+ 	 == / Filesystem Information == 
+============================================================ 
+
+Checking Inodes. Please note this could take a while to run...
+
+============================================================ 
+ 	 == Server Time at start == 
+============================================================ 
+
+Fri 11 Sep 12:27:47 BST 2020
+
+============================================================ 
+ 	 == Inode Information for [ / ] == 
+============================================================ 
+
+Filesystem               Type  Inodes   IUsed    IFree    IUse%  Mounted  on
+/dev/mapper/fedora-root  ext4  9732096  1346902  8385194  14%    /        
+
+============================================================ 
+ 	 == Storage device behind filesystem [ / ] == 
+============================================================ 
+
+/dev/mapper/fedora-root
+
+============================================================ 
+ 	 == Top inode Consumers on [ / ] == 
+============================================================ 
+
+inode-Count 	 Path                          
+    814,406 	 /var                          
+    813,177 	 /var/lib                      
+    808,320 	 /var/lib/docker               
+    771,441 	 /var/lib/docker/overlay2      
+    256,737 	 /home                         
+    255,527 	 /usr                          
+    179,418 	 /home/luke             
+    146,649 	 /usr/share                    
+     69,939 	 /home/luke/.cache      
+     68,990 	 /usr/lib                      
+     53,524 	 /root                         
+     49,277 	 /root/backups_desktop         
+     49,272 	 /root/backups_desktop/daily   
+     49,262 	 /root/backups_desktop/daily/test
+     49,233 	 /root/backups_desktop/daily/test/home
+     42,162 	 /home/venv                    
+     38,952 	 /home/luke/development 
+     35,370 	 /usr/lib/python3.8            
+     35,369 	 /usr/lib/python3.8/site-packages
+     35,107 	 /home/luke/.cache/google-chrome
+
+============================================================ 
+ 	 == Bytes per Inode format for [ / ] == 
+============================================================ 
+
+15.0 KB per inode!
+
+============================================================ 
+ 	 == Disk space [ / ] == 
+============================================================ 
+
+Filesystem              Type  Size  Used Avail Use% Mounted on
+/dev/mapper/fedora-root ext4  146G   59G   80G  43% /
+
+Filesystem              Type  Inodes   IUsed   IFree IUse% Mounted on
+/dev/mapper/fedora-root ext4 9732096 1346905 8385191   14% /
+
+============================================================ 
+ 	 == Elapsed Time == 
+============================================================ 
+
+0h:1m:38s
+
+============================================================ 
+ 	 == Server Time at completion == 
+============================================================ 
+
+Fri 11 Sep 12:29:25 BST 2020
 
 ============================================================
 ```
