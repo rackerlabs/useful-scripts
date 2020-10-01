@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/richardforth/wp_version_scanner.git
+	branch = staging
+	commit = efe77803560b2ce6972ddcd8914a088ac1cbc5e3
+	parent = 1e6c412c211122b3bb84867fe2382c8a0d1e035d
+	method = merge
+	cmdver = 0.4.1
