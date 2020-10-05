@@ -2,6 +2,35 @@ CHANGELOG
 
 When		Who		What
 ======================================================================================
+2020-10-03	Richard Forth   Added an important message about
+				troubleshooting apache vs running this script.
+2020-09-30	Richard Forth   Clarification onf "10% of MAX" wording to:
+                                "90-100% of remaining RAM".
+2020-09-09	Richard Forth   Address issue #355
+                                Made a change to how debian/ubuntu php.ini is
+				located to make it more future proof.
+2020-07-21	Richard Forth   Address issue #351
+                                - Fixed applied to patch a break introduced in #347.
+				Caused the entire config to be empty.
+				In turn caused lots of CONFIG NOT FOUND, even
+				when the configuration elements existed on the
+				system.
+2020-07-21	Richard Forth   Address issue #350
+                                - Change wording about worker model.
+2020-07-17	Richard Forth   Address issue #348
+				- Apache user not found in ubuntu installs.
+				- Checks /etc/apache2/envvars if 
+				$apache_user_config is blank.
+2020-07-17	Richard Forth   Address issue #347
+                                - snag a chomp issue as a result of fix that
+				went in. Also fixed date in changlog I forgot
+				to change when copying a line, my bad.
+2020-07-17	Richard Forth   Address issue #347
+                                - sanity check included files when building
+				config array. Requires testng and bugfixing if
+				necessary.
+2020-07-08	Sebastien Badia	Detection support for php 7.3
+				- Closes #344
 2020-07-02	Richard Forth	Addresses issue #342
 				- fix grep out root on remi installs
 				- Closes #342

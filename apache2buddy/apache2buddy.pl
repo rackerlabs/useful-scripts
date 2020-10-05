@@ -528,6 +528,24 @@ sub systemcheck_large_logs {
 	# silently proceed if the folder doesnt exist
 }
 
+sub files_in_array_that_exist_and_are_readable {
+  # takes an array of filenames as argument, filters out files that may cause an exception later on.
+  # see issue #347
+  my @in_array = @_;
+  # Lets programatically rip through the array and work out which
+  # ones exist and put those in a new array.
+  my @out_array;
+  foreach my $file(@in_array) {
+    chomp($file);
+    # if the file exists, and we have permission to read it ( and we should, we are root after all if we got this far)
+    if ( -f $file && -r $file) {
+      push(@out_array,$file)
+    }
+  }
+  return @out_array;
+}
+
+
 # here we're going to build a list of the files included by the Apache 
 # configuration
 sub build_list_of_files {
@@ -545,7 +563,7 @@ sub build_list_of_files {
 	# to include
 	push(@master_list,$base_apache_config);
 
-	# put the main configuratino file into the list of files we need to 
+	# put the main configuration file into the list of files we need to 
 	# search for include lines
 	push(@find_includes_in,$base_apache_config);
 	
@@ -571,7 +589,7 @@ sub build_config_array {
 	# to include
 	push(@master_list,$base_apache_config);
 
-	# put the main configuratino file into the list of files we need to 
+	# put the main configuration file into the list of files we need to 
 	# search for include lines
 	push(@find_includes_in,$base_apache_config);
 
@@ -650,15 +668,18 @@ sub find_included_files {
 					# expand it and add the files
 					# to the list
 					my @new_includes = expand_included_files(\@include_files, $glob, $apache_root);
-					push(@$master_list,@new_includes);
-					push(@$find_includes_in,@new_includes);
+                                        my @sane_includes = files_in_array_that_exist_and_are_readable(@new_includes);
+					push(@$master_list,@sane_includes);
+					push(@$find_includes_in,@sane_includes);
 				}
 				else {
 					# if it is not a glob, push the 
 					# line into the configuration 
 					# array
 					push(@$master_list,$_);
+                                        @$master_list = files_in_array_that_exist_and_are_readable(@$master_list);
 					push(@$find_includes_in,$_);
+                                        @$find_includes_in = files_in_array_that_exist_and_are_readable(@$find_includes_in);
 				}
 			}
 			# This extra bit of code is required for apache 2.4's new directive "IncludeOptional"
@@ -691,15 +712,18 @@ sub find_included_files {
 					# expand it and add the files
 					# to the list
 					my @new_includes = expand_included_files(\@include_files, $glob, $apache_root);
-					push(@$master_list,@new_includes);
-					push(@$find_includes_in,@new_includes);
+                                        my @sane_includes = files_in_array_that_exist_and_are_readable(@new_includes);
+					push(@$master_list,@sane_includes);
+					push(@$find_includes_in,@sane_includes);
 				}
 				else {
 					# if it is not a glob, push the 
 					# line into the configuration 
 					# array
 					push(@$master_list,$_);
+                                        @$master_list = files_in_array_that_exist_and_are_readable(@$master_list);
 					push(@$find_includes_in,$_);
+                                        @$find_includes_in = files_in_array_that_exist_and_are_readable(@$find_includes_in);
 				}
 			}
 		}
@@ -1287,18 +1311,21 @@ sub get_php_setting {
 		# try to find the apache2 one
 		if ( -f "/etc/php5/apache2/php.ini" ) {
 			our $real_config = "/etc/php5/apache2/php.ini";
-		} elsif ( -f "/etc/php/7.0/apache2/php.ini") {
-			our $real_config = "/etc/php/7.0/apache2/php.ini";
-		} elsif ( -f "/etc/php/7.0/fpm/php.ini") {
-			our $real_config = "/etc/php/7.0/fpm/php.ini";
-		} elsif ( -f "/etc/php/7.1/apache2/php.ini") {
-                        our $real_config = "/etc/php/7.1/apache2/php.ini";
-		} elsif ( -f "/etc/php/7.1/fpm/php.ini") {
-			our $real_config = "/etc/php/7.1/fpm/php.ini";
-                } elsif ( -f "/etc/php/7.2/apache2/php.ini") {
-                        our $real_config = "/etc/php/7.2/apache2/php.ini";
-		} elsif ( -f "/etc/php/7.2/fpm/php.ini") {
-			our $real_config = "/etc/php/7.2/fpm/php.ini";
+		} else {
+			# looking for /etc/php/*/apache2/php.ini
+			my @files = glob "/etc/php/*/apache2/php.ini";
+			
+			if (@files != 1) {
+				# looking for /etc/php/*/fpm/php.ini
+				my @files = glob "/etc/php/*/fpm/php.ini";
+			
+                                # This block should never be hit.
+				if (@files != 1) {
+					our $real_config = "Not Found.";
+			        }
+			} else {
+				our $real_config = @files[0];
+			}
 		}
 
 		our $real_config;
@@ -1423,10 +1450,10 @@ sub generate_standard_report {
 				if ( ! $NOOK ) { show_shortok_box(); print "\t${GREEN}Your MaxClients setting is within an acceptable range.${ENDC}\n" } 
 			}
 			if ( our $apache_version =~ m/.*\s*\/2.4.*/) {
-				printf ("${YELLOW}%-75s${ENDC} %-38s\n", "\tYour recommended MaxRequestWorkers setting (based on available memory) is between $min_rec_maxclients and $max_rec_maxclients${ENDC}.", "<------- Acceptable Range (10% of MAX)");
+				printf ("${YELLOW}%-75s${ENDC} %-38s\n", "\tYour recommended MaxRequestWorkers setting (based on available memory) is between $min_rec_maxclients and $max_rec_maxclients${ENDC}.", "<-- Acceptable Range (90-100% of Remaining RAM)");
 				if ( $vhost_count >= $max_rec_maxclients ) { show_crit_box(); print "\t${RED}Vhost count exceeds recommended MaxRequestWorkers limits!${ENDC}\n"}
 			} else {
-				printf ("${YELLOW}%-75s${ENDC} %-38s\n", "\tYour recommended MaxClients setting (based on available memory) is between $min_rec_maxclients and $max_rec_maxclients${ENDC}.", "<------- Acceptable Range (10% of MAX)");
+				printf ("${YELLOW}%-75s${ENDC} %-38s\n", "\tYour recommended MaxClients setting (based on available memory) is between $min_rec_maxclients and $max_rec_maxclients${ENDC}.", "<-- Acceptable Range (90-100% of Remaining RAM)");
 				if ( $vhost_count >= $max_rec_maxclients ) { show_crit_box(); print "${RED}Vhost count exceeds recommended MaxClients limits!${ENDC}\n"}
 			}
 			printf ("%-62s ${CYAN}%d %2s${ENDC}\n", "\tMax potential memory usage:", $max_potential_usage, "MB");  # exempt from NOINFO directive.
@@ -1439,10 +1466,10 @@ sub generate_standard_report {
 				show_crit_box(); print "\t${RED}Your MaxClients setting is too low.${ENDC}\n"; # exempt from NOINFO directive.
 			}
 			if ( our $apache_version =~ m/.*\s*\/2.4.*/) {
-				printf ("${YELLOW}%-75s${ENDC} %-38s\n", "\tYour recommended MaxRequestWorkers setting is between $min_rec_maxclients and $max_rec_maxclients${ENDC}.", "<------- Acceptable Range (10% of MAX)");
+				printf ("${YELLOW}%-75s${ENDC} %-38s\n", "\tYour recommended MaxRequestWorkers setting is between $min_rec_maxclients and $max_rec_maxclients${ENDC}.", "<-- Acceptable Range (90-100% of Remaining RAM)");
 				if ( $vhost_count >= $max_rec_maxclients ) { show_crit_box(); print "${RED}Vhost count exceeds recommended MaxRequestWorkers limits!${ENDC}\n"}
 			} else {
-				printf ("${YELLOW}%-75s${ENDC} %-38s\n", "\tYour recommended MaxClients setting (based on available memory) is between $min_rec_maxclients and $max_rec_maxclients${ENDC}.", "<------- Acceptable Range (10% of MAX)");
+				printf ("${YELLOW}%-75s${ENDC} %-38s\n", "\tYour recommended MaxClients setting (based on available memory) is between $min_rec_maxclients and $max_rec_maxclients${ENDC}.", "<-- Acceptable Range (90-100% of Remaining RAM)");
 				if ( $vhost_count >= $max_rec_maxclients ) { show_crit_box(); print "${RED}Vhost count exceeds recommended MaxClients limits!${ENDC}\n"}
 			}
 			printf ("%-62s ${CYAN}%d %2s${ENDC}\n", "\tMax potential memory usage:", $max_potential_usage, "MB");  # exempt from NOINFO directive.
@@ -1455,10 +1482,10 @@ sub generate_standard_report {
 				show_crit_box(); print "\t${RED}Your MaxClients setting is too high.${ENDC}\n"; # exempt from NOINFO directive.
 			}
 			if ( our $apache_version =~ m/.*\s*\/2.4.*/) {
-				printf ("${YELLOW}%-75s${ENDC} %-38s\n", "\tYour recommended MaxRequestWorkers setting (based on available memory) is between $min_rec_maxclients and $max_rec_maxclients${ENDC}.", "<------- Acceptable Range (10% of MAX)");
+				printf ("${YELLOW}%-75s${ENDC} %-38s\n", "\tYour recommended MaxRequestWorkers setting (based on available memory) is between $min_rec_maxclients and $max_rec_maxclients${ENDC}.", "<-- Acceptable Range (90-100% of Remaining RAM)");
 				if ( $vhost_count >= $max_rec_maxclients ) { show_crit_box(); print "${RED}Vhost count exceeds recommended MaxRequestWorkers limits!${ENDC}\n"}
 			} else {
-				printf ("${YELLOW}%-75s${ENDC} %-38s\n", "\tYour recommended MaxClients setting (based on available memory) is between $min_rec_maxclients and $max_rec_maxclients${ENDC}.", "<------- Acceptable Range (10% of MAX)");
+				printf ("${YELLOW}%-75s${ENDC} %-38s\n", "\tYour recommended MaxClients setting (based on available memory) is between $min_rec_maxclients and $max_rec_maxclients${ENDC}.", "<-- Acceptable Range (90-100% of Remaining RAM)");
 				if ( $vhost_count >= $max_rec_maxclients ) { show_crit_box(); print "${RED}Vhost count exceeds recommended MaxClients limits!${ENDC}\n"}
 			}
 			printf ("%-62s ${RED}%d %2s${ENDC}\n", "\tMax potential memory usage:", $max_potential_usage, "MB");  # exempt from NOINFO directive.
@@ -1478,7 +1505,7 @@ sub generate_standard_report {
 	if ($model eq "worker") {
 			print "\t${CYAN}Apache appears to be running in worker mode.\n";
 			print "\tPlease check manually for backend processes such as PHP-FPM and pm.max_children.\n";
-			print "\tApache2buddy does not calculate maxclients for worker model.${ENDC}\n";
+			print "\tApache2buddy ONLY calculates maxclients for prefork model.${ENDC}\n";
 			# make a logfile entry at /var/log/apache2buddy.log
 			open (LOGFILE, ">>/var/log/apache2buddy.log");
         		print LOGFILE (date()." Uptime: \"$uptime\"  Model: \"Worker\" Memory: \"$available_mem MB\" Maxclients: \"$maxclients\" Recommended: \"N\\A\" Smallest: \"$apache_proc_smallest MB\" Avg: \"$apache_proc_average MB\" Largest: \"$apache_proc_highest MB\"\n");
@@ -1487,7 +1514,7 @@ sub generate_standard_report {
 	if ($model eq "event") {
 			print "\t${CYAN}Apache appears to be running in event mode.\n";
 			print "\tPlease check manually for backend processes such as PHP-FPM and pm.max_children.\n";
-			print "\tApache2buddy does not calculate maxclients for worker model.${ENDC}\n";
+			print "\tApache2buddy ONLY calculates maxclients for prefork model.${ENDC}\n";
 			# make a logfile entry at /var/log/apache2buddy.log
 			open (LOGFILE, ">>/var/log/apache2buddy.log");
         		print LOGFILE (date()." Uptime: \"$uptime\"  Model: \"Event\" Memory: \"$available_mem MB\" Maxclients: \"$maxclients\" Recommended: \"N\\A\" Smallest: \"$apache_proc_smallest MB\" Avg: \"$apache_proc_average MB\" Largest: \"$apache_proc_highest MB\"\n");
@@ -1564,7 +1591,7 @@ sub show_shortok_box {
 
 sub show_important_message {
 	if ( ! $NOINFO ) {
-		print "\n${YELLOW}** IMPORTANT MESSAGE **\nImportant messages go here.${ENDC}\n";
+		print "\n${RED}** IMPORTANT MESSAGE **\n\napache2buddy is not a troubleshooting tool.\nDo not use it to try and determine why your site\nwent down or why it was slow.\n\nPerform some proper investigations first, and\nonly if you found that you were hitting the\nMaxRequestWorkers limit, or if your server was\nrunning out of memory (primarily due to\nexcessive memory usage by Apache), should you\nrun this script and refer to its output..${ENDC}\n";
 	}
 }
 
@@ -1848,6 +1875,16 @@ sub preflight_checks {
         # account for 'apache\x{d}' strangeness
         $apache_user_config =~ s/\x{d}//;
         $apache_user_config =~ s/^\s*(.*?)\s*$/$1/;; # address issue #19, strip whitespace from both sides.
+        # issue #348 sanity check for NOT FOUND on ubuntu systems
+        if ($apache_user_config eq "CONFIG NOT FOUND") {
+		if ($VERBOSE) { print "VERBOSE: Checking for envvarsfile to get apache_config_user on ubuntu systems.\n" }
+		if ( -f "/etc/apache2/envvars" && -r "/etc/apache2/envvars") {
+			 if ($VERBOSE) { print "VERBOSE: /etc/apache2/envvars exists and is readable, checking value of APACHE_RUN_USER...\n" } 
+			 $apache_user_config = `grep 'export APACHE_RUN_USER=' /etc/apache2/envvars | awk -F"=" '{print \$2}'`;
+			 chomp($apache_user_config);
+			 $apache_user_config =~ s/^\s*(.*?)\s*$/$1/;; # address issue #19, strip whitespace from both sides.
+		}
+	}  
 	unless ($apache_user_config eq "apache" or $apache_user_config eq "www-data") {
                 my $apache_config_userid = `id -u $apache_user_config`;
                 chomp($apache_config_userid);
@@ -2832,4 +2869,4 @@ if ( $model eq "worker") {
 
 generate_standard_report($available_mem, $maxclients, $vhost_count, $apache_proc_lowest, $apache_proc_average, $apache_proc_highest, $model, $uptime, $threadsperchild, $mysql_memory_usage_mbytes, $java_memory_usage_mbytes, $redis_memory_usage_mbytes, $memcache_memory_usage_mbytes, $varnish_memory_usage_mbytes, $phpfpm_memory_usage_mbytes, $gluster_memory_usage_mbytes);
 
-#show_important_message();
+show_important_message();

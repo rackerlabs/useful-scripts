@@ -6,7 +6,7 @@
 [subrepo]
 	remote = https://github.com/richardforth/apache2buddy.git
 	branch = staging
-	commit = 2629efffe39c356f254c05e760a3976a54be75d0
-	parent = ada52d0955a19d18f0af30efad8492b3953a449b
+	commit = 52fdb442fadeea174201f6075dbe39cbcf1342ae
+	parent = f28bf1b470912e75df189d965362c6922e55bd35
 	method = merge
 	cmdver = 0.4.1
