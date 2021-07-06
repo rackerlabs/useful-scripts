@@ -1,2 +1,2 @@
-pylint==1.9.4
-pycodestyle==2.6.0
+pylint==2.9.3
+pycodestyle==2.7.0
