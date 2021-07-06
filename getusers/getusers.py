@@ -17,7 +17,7 @@ import pydoc
 import time
 import struct
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 ###################################
 # Useful variables for the script
@@ -192,7 +192,7 @@ def init_variables():
 
     # Get all of the logins from lastlog
     try:
-        last_file = open(Config.LAST_FILE, 'r')
+        last_file = open(Config.LAST_FILE, 'rb')
     except IOError:
         sys.exit("Unable to open " + Config.LAST_FILE)
 
@@ -209,8 +209,8 @@ def init_variables():
         # Convert the timestamp
         datetime = time.ctime(timestamp)
         # Strip trailing null characters
-        terminal = row[1].rstrip('\x00')
-        host = row[2].rstrip('\x00')
+        terminal = row[1].rstrip('\x00'.encode())
+        host = row[2].rstrip('\x00'.encode())
 
         login = [uid, datetime, host, terminal]
         Users.LOGINS.append(login)
