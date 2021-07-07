@@ -62,7 +62,8 @@ disable=missing-docstring,
         pointless-statement,
         too-many-return-statements,
         unused-import,
-        unused-variable
+        unused-variable,
+        consider-using-with
 
 
 # Enable the message, report, category or checker with the given id(s). You can
