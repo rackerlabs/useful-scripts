@@ -6,7 +6,7 @@
 [subrepo]
 	remote = https://github.com/dsgnr/pleskbuddy.git
 	branch = master
-	commit = 44c475bd9e2308126f8fc8ec6dd29c0286db49f1
-	parent = 81c8281679783228392558ea78caa82aada554c6
+	commit = 16b5f66a4a8c8839b56503350153d15c0749c993
+	parent = 8f34cf222129a0d2ca21c539601bfa014ed4cd0d
 	method = merge
 	cmdver = 0.4.3

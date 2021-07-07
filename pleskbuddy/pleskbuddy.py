@@ -17,7 +17,7 @@ except ImportError:
     from urllib2 import urlopen
 
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 
 
 def options():
@@ -117,7 +117,7 @@ def info():
         .strip()
         .decode("utf-8")
     )
-    public_ip = urlopen("https://ipv4.icanhazip.com").read().strip().decode("utf-8")
+    public_ip = urlopen("http://ipv4.icanhazip.com").read().strip().decode("utf-8")
     psa_info = (
         Color.MAGENTA
         + "==== Plesk Information ====\n"
