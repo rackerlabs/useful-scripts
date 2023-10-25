@@ -378,11 +378,12 @@ except ModuleNotFoundError as e:
         # we can't determine OS and Version
         if ( $py_exists ) {
                 show_crit_box(); print "Python scripting failed. Python requires package 'distro' or 'platform' to determine the Operating System and Version.\n";
+                show_info_box(); print "${YELLOW}To fix this try installing python-distro, python3-distro or 'pip/pip3 install distro'.${ENDC}\n";
         } else {
                 show_crit_box(); print "Unable to locate the any 'python' binary. This script requires python to determine the Operating System and Version.\n";
                 show_info_box(); print "${YELLOW}To fix this make sure the python2 or python3 package is installed.${ENDC}\n";
         }
-        exit;
+        exit 1;
 
         # XXX instead of calling exit() we can:
         # @main::os_platform = ( 'Unknown Distro', '0.0', '' );
@@ -397,6 +398,7 @@ sub check_os_support {
 				'ubuntu',
 				'Debian',
 				'debian',
+				'Debian GNU/Linux',
 				'Red Hat Enterprise Linux',
 				'Red Hat Enterprise Linux Server',
 				'redhat',
@@ -404,6 +406,9 @@ sub check_os_support {
 				'CentOS',
 				'centos',
 				'Scientific Linux',
+				'Rocky Linux',
+				'AlmaLinux',
+				'Amazon Linux',
 				'SUSE Linux Enterprise Server',
 				'SuSE');
 	my %sol = map { $_ => 1 } @supported_os_list;
@@ -411,22 +416,29 @@ sub check_os_support {
 	my @ubuntu_os_list = ('Ubuntu', 'ubuntu');
 	my %uol = map { $_ => 1 } @ubuntu_os_list;
 	
+	my @amazon_os_list = ('AmazonLinux', 'Amazon Linux');
+	my %amzol = map { $_ => 1 } @amazon_os_list;
+	
 	my @debian_os_list = ('Debian', 'debian');
 	my %dol = map { $_ => 1 } @debian_os_list;
 	
-	my @redhat_os_list = ('Red Hat Enterprise Linux', 'redhat', 'CentOS Linux', 'Scientific Linux');
+	my @redhat_os_list = ('Red Hat Enterprise Linux', 'redhat', 'CentOS Linux', 'Scientific Linux', 'Rocky Linux', 'AlmaLinux');
 	my %rol = map { $_ => 1 } @redhat_os_list;
 
 	my @suse_os_list = ('SUSE Linux Enterprise Server');
 	my %suseol = map { $_ => 1 } @suse_os_list;
 
 	# https://wiki.debian.org/DebianReleases
-	my @debian_supported_versions = ('8','9','10');
+	my @debian_supported_versions = ('9','10','11');
 	my %dsv = map { $_ => 1 } @debian_supported_versions;
 
 	# https://www.ubuntu.com/info/release-end-of-life
-	my @ubuntu_supported_versions = ('16.04','18.04','20.04');
+	my @ubuntu_supported_versions = ('18.04','20.04','22.04');
 	my %usv = map { $_ => 1 } @ubuntu_supported_versions;
+
+	# https://endoflife.date/amazon-linux
+        my @amazon_supported_versions = ('2');
+	my %amznsv = map { $_ => 1 } @amazon_supported_versions;
 
 	if (exists($sol{$distro})) {
 		if ( ! $NOOK ) { show_ok_box(); print "This distro is supported by apache2buddy.pl.\n" }	
@@ -443,22 +455,22 @@ sub check_os_support {
 			if (exists($dsv{$major_debian_version})) {
 				if ( ! $NOOK ) { show_ok_box(); print "This distro version is supported by apache2buddy.pl.\n" }
 			} else {
-				show_crit_box(); print "${RED}This distro version (${CYAN}$version${ENDC}${RED}) is not supported by apache2buddy.pl.${ENDC}\n";
+				show_crit_box(); print "${RED} ERROR: This distro version (${CYAN}$version${ENDC}${RED}) is not supported by apache2buddy.pl.${ENDC}\n";
 				# list supported debian versions
 				if ( ! $NOINFO ) { show_advisory_box(); print "${YELLOW}Supported Debian versions:${ENDC} '${CYAN}" . join("${ENDC}', '${CYAN}", @debian_supported_versions) . "${ENDC}'. To run anyway (at your own risk), try -O or --skip-os-version-check.\n"}
-				exit;
+				exit 1;
 			}
 		} elsif  (exists($uol{$distro})) {
 			if (exists($usv{$version})) {
 				if ( ! $NOOK ) { show_ok_box(); print "This distro version is supported by apache2buddy.pl.\n" }
 			} else {
-				show_crit_box(); print "${RED}This distro version (${CYAN}$version${ENDC}${RED}) is not supported by apache2buddy.pl.${ENDC}\n";
+				show_crit_box(); print "${RED}ERROR: This distro version (${CYAN}$version${ENDC}${RED}) is not supported by apache2buddy.pl.${ENDC}\n";
 				# list supported debian versions
 				if ( ! $NOINFO ) { show_advisory_box(); print "${YELLOW}Supported Ubuntu (LTS ONLY) versions:${ENDC} '${CYAN}" . join("${ENDC}', '${CYAN}", @ubuntu_supported_versions) . "${ENDC}'. To run anyway (at your own risk), try -O or --skip-os-version-check.\n"}
-				exit;
+				exit 1;
 			}
 		} elsif (exists($rol{$distro})) {
-			# for red hat versions is not so clinical regarding the specific versions, however we need to be mindful of EOL versions eg RHEL 3, 4, 5
+			# for red hat versions is not so clinical regarding the specific versions, however we need to be mindful of EOL versions eg RHEL 3, 4, 5, 6
 			# get major version from version string. note that redhatm centos and scientifc are al rebuilds of the same sources, variables therefore
 			# use the generic 'redhat' reference.
 			if ( $VERBOSE ) { print "VERBOSE -> RedHat Version: ". $version . "\n"}
@@ -470,9 +482,9 @@ sub check_os_support {
        			}
 			my $major_redhat_version = $redhat_version[0];
 			if ( $VERBOSE ) { print "VERBOSE -> Major RedHat Version Detected ". $major_redhat_version . "\n"}
-			if ($major_redhat_version lt 6 ) {
-				show_crit_box(); print "${RED}This distro version (${CYAN}$version${ENDC}${RED}) is not supported by apache2buddy.pl.${ENDC}\n";
-				exit;
+			if ($major_redhat_version lt 7 ) {
+				show_crit_box(); print "${RED}ERROR: This distro version (${CYAN}$version${ENDC}${RED}) is not supported by apache2buddy.pl.${ENDC}\n";
+				exit 1;
 			} else {
 				if ( ! $NOOK ) { show_ok_box(); print "This distro version is supported by apache2buddy.pl.\n" }
 			}
@@ -489,17 +501,34 @@ sub check_os_support {
 			my $major_suse_version = $suse_version[0];
 			if ( $VERBOSE ) { print "VERBOSE -> Major SUSE Version Detected ". $major_suse_version . "\n"}
 			if ($major_suse_version lt 12 ) {
-				show_crit_box(); print "${RED}This distro version (${CYAN}$version${ENDC}${RED}) is not supported by apache2buddy.pl.${ENDC}\n";
-				exit;
+				show_crit_box(); print "${RED}ERROR: This distro version (${CYAN}$version${ENDC}${RED}) is not supported by apache2buddy.pl.${ENDC}\n";
+				exit 1;
 			} else {
 				if ( ! $NOOK ) { show_ok_box(); print "This distro version is supported by apache2buddy.pl.\n" }
 			}
+		} elsif (exists($amzol{$distro})) {
+			# Currently there is only one supported distribution of Amazon Linux 
+			if ( $VERBOSE ) { print "VERBOSE -> Amazon Linux Version: ". $version . "\n"}
+			my @amazon_version = split('\.', $version);
+			if ( $VERBOSE ) {
+				foreach my $item (@amazon_version) {
+					print "VERBOSE: ".  $item . "\n";
+				}
+       			}
+			my $major_amazon_version = $amazon_version[0];
+			if ( $VERBOSE ) { print "VERBOSE -> Major Amazon Version Detected ". $major_amazon_version . "\n"}
+			if ($major_amazon_version lt 2 ) {
+				show_crit_box(); print "${RED}ERROR: This distro version (${CYAN}$version${ENDC}${RED}) is not supported by apache2buddy.pl.${ENDC}\n";
+				exit 1;
+			} else {
+				if ( ! $NOOK ) { show_ok_box(); print "This distro version is supported by apache2buddy.pl.\n" }
+			}	
 		}
 	} else {
-		show_crit_box(); print "${RED}This distro is not supported by apache2buddy.pl.${ENDC}\n";
+		show_crit_box(); print "${RED}ERROR: This distro is not supported by apache2buddy.pl.${ENDC}\n";
 		# list supported OS distros
 		if ( ! $NOINFO ) { show_advisory_box(); print "${YELLOW}Supported Distro's:${ENDC} '${CYAN}" . join("${ENDC}', '${CYAN}", @supported_os_list) . "${ENDC}'. To run anyway (at your own risk), try -O or --skip-os-version-check.\n"}
-		exit;
+		exit 1;
 	}
 }
 
@@ -986,6 +1015,9 @@ sub test_process {
 	} elsif ( $process_name eq '/usr/sbin/apache2' ) {
 		@output = `LANGUAGE=en_GB.UTF-8 /usr/sbin/apache2ctl -V 2>&1 | grep "Server version"`;
 		print "VERBOSE: First line of output from \"/usr/sbin/apache2ctl -V\": $output[0]\n" if $main::VERBOSE;
+    } elsif ( $process_name eq '/usr/sbin/httpd-prefork' ) {
+	    @output = `LANGUAGE=en_GB.UTF-8 /usr/sbin/apache2ctl -V 2>&1 | grep "Server version"`;
+       print "VERBOSE: First line of output from \"/usr/sbin/apache2ctl -V\": $output[0]\n" if $main::VERBOSE;
 	} elsif ( $process_name eq '/usr/local/apache/bin/httpd' ) {
 		if ( ! $NOWARN ) { show_warn_box(); print "${RED}Apache seems to have been installed from source, its technically unsupported, we may get errors${ENDC}\n" }
 		@output = `LANGUAGE=en_GB.UTF-8 $process_name -V 2>&1 | grep "Server version"`;
@@ -1591,7 +1623,7 @@ sub show_shortok_box {
 
 sub show_important_message {
 	if ( ! $NOINFO ) {
-		print "\n${RED}** IMPORTANT MESSAGE **\n\napache2buddy is not a troubleshooting tool.\nDo not use it to try and determine why your site\nwent down or why it was slow.\n\nPerform some proper investigations first, and\nonly if you found that you were hitting the\nMaxRequestWorkers limit, or if your server was\nrunning out of memory (primarily due to\nexcessive memory usage by Apache), should you\nrun this script and refer to its output..${ENDC}\n";
+		print "\n${RED}** IMPORTANT MESSAGE **\n\napache2buddy is not a troubleshooting tool.\nDo not use it to try and determine why your site\nwent down or why it was slow.\n\nPerform some proper investigations first, and\nonly if you found that you were hitting the\nMaxRequestWorkers limit, or if your server was\nrunning out of memory (primarily due to\nexcessive memory usage by Apache), should you\nrun this script and refer to its output..\n\n** DOMAIN EXPIRY NOTICE **\n\nThere is no intention of renewing the domain: \n\n\tapache2buddy.pl\n\nPlease use extreme caution! Running arbirary\ncode as root is high risk and the domain\nwill not be associated with this code.\n\nWe took steps in 2018 to move the code to\ngithub exclusively and have it run from\nthere directly with curl and perl.${ENDC}\n";
 	}
 }
 
@@ -1885,7 +1917,7 @@ sub preflight_checks {
 			 $apache_user_config =~ s/^\s*(.*?)\s*$/$1/;; # address issue #19, strip whitespace from both sides.
 		}
 	}  
-	unless ($apache_user_config eq "apache" or $apache_user_config eq "www-data") {
+	unless ($apache_user_config eq "apache" or $apache_user_config eq "www-data" or ($apache_user_config eq "wwwrun" and $distro eq "SUSE Linux Enterprise Server")) {
                 my $apache_config_userid = `id -u $apache_user_config`;
                 chomp($apache_config_userid);
                 # account for 'apache\x{d}' strangeness
@@ -2076,8 +2108,8 @@ sub preflight_checks {
 	}
 	our $threadsperchild;
 	if ($model eq "worker" || $model eq "event" ) {
-		if ( ! $NOINFO ) { show_info_box(); print "Your ThreadsPerChild setting for worker MPM is  ".$threadsperchild."\n" }
-		if ( ! $NOINFO ) { show_info_box(); print "Your ServerLimit setting for worker MPM is  ".$serverlimit."\n" }
+		if ( ! $NOINFO ) { show_info_box(); print "Your ThreadsPerChild setting for worker/event MPM is  ".$threadsperchild."\n" }
+		if ( ! $NOINFO ) { show_info_box(); print "Your ServerLimit setting for worker/event MPM is  ".$serverlimit."\n" }
 	}
 
 	# Check 16
@@ -2446,6 +2478,8 @@ sub detect_maxclients_hits {
 		our $maxclients_hits = `grep -i reached /usr/local/apache/logs/error_log | egrep -v "mod" | tail -5`;
 	} elsif ($process_name eq "/opt/apache2/bin/httpd") {
 		our $maxclients_hits = `find /opt/apache2/logs -name "error*" | tail -1 | xargs grep -i reached | egrep -v "mod" | tail -5`;
+	} elsif ($process_name eq "/usr/sbin/httpd-prefork") {
+       our $maxclients_hits = `find /var/log/apache2 -name "error*" | tail -1 | xargs grep -i reached | egrep -v "mod" | tail -5`;
 	} else {
 		# general ToDo would be `'grep "^ErrorLog " $apache_conf_file'`;
 		# to get configuration like:
