@@ -1,47 +1,28 @@
+# Status
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-no-red.svg)](https://GitHub.com/richardforth/apache2buddy/graphs/commit-activity) [![GitHub latest commit](https://badgen.net/github/last-commit/richardforth/apache2buddy)](https://GitHub.com/richardforth/apache2buddy/commit/) [![GitHub stars](https://badgen.net/github/stars/richardforth/apache2buddy)](https://GitHub.com/richardforth/apache2buddy/stargazers/) [![Generic badge](https://img.shields.io/badge/Tests-Some%20Deprecation%20Warnings-yellow.svg)](https://shields.io/)
+
+# Supported OSes
+
+[![Generic badge](https://img.shields.io/badge/RHEL%207-Unable%20To%20Test-red.svg)](https://shields.io/) [![Generic badge](https://img.shields.io/badge/Centos%207-Passing-Green.svg)](https://shields.io/) [![Generic badge](https://img.shields.io/badge/Scientific%207-Passing-Green.svg)](https://shields.io/) 
+
+ [![Generic badge](https://img.shields.io/badge/RHEL%208-Unable%20To%20Test-red.svg)](https://shields.io/) [![Generic badge](https://img.shields.io/badge/Centos%208-Deprecated-yellow.svg)](https://shields.io/)  [![Generic badge](https://img.shields.io/badge/Rocky%20Linux%208-Passing-Green.svg)](https://shields.io/) [![Generic badge](https://img.shields.io/badge/AlmaLinux%208-Passing-Green.svg)](https://shields.io/)
+
+[![Generic badge](https://img.shields.io/badge/Debian%209-Passing:%20EOL%20DATE%20June%2030%202022-yellow.svg)](https://shields.io/) [![Generic badge](https://img.shields.io/badge/Debian%2010-Passing-Green.svg)](https://shields.io/) [![Generic badge](https://img.shields.io/badge/Debian%2011-Passing%20with%20minor%20errors%20or%20warnings-yellow.svg)](https://shields.io/)
+
+[![Generic badge](https://img.shields.io/badge/Ubuntu%2018.04-Passing-Green.svg)](https://shields.io/) [![Generic badge](https://img.shields.io/badge/Ubuntu%2020.04-Passing-Green.svg)](https://shields.io/) [![Generic badge](https://img.shields.io/badge/Ubuntu%2022.04-Passing-Green.svg)](https://shields.io/)
+
+[![Generic badge](https://img.shields.io/badge/Amazon%20Linux%202-Passing%20with%20minor%20errors%20or%20warnings-yellow.svg)](https://shields.io/)
+
+[![Generic badge](https://img.shields.io/badge/SLES%2012-Unable%20To%20Test-red.svg)](https://shields.io/) [![Generic badge](https://img.shields.io/badge/SLES%2015-Unable%20To%20Test-red.svg)](https://shields.io/)
+
+
+The rule of thumb is if its not listed, its not supported.
+Anything that says Unable To Test, means it  should work, but can't be dockerized and isnt included in the Jenkinsfile for licensing reasons, and needs field testing. Badges for those items will be updated to "Passing" if seen working in the wild.
+
 # execution
-
-## old method:
-
-	# curl -sL apache2buddy.pl | perl
-
-## new method:
 
 	# curl -sL https://raw.githubusercontent.com/richardforth/apache2buddy/master/apache2buddy.pl | perl
 
-# landing page
-
-	########### IMPORTANT SAFETY ANNOUNCEMENT #################
-	
-	This is the NEW landing page for apache2buddy.pl
-	
-	Please don't curl and perl the domain any more.
-	
-	For security reasons, the following 
-	execution method will bring you to this page:
-	
-	  # curl -sL apache2buddy.pl | perl
-	
-	Instead please run / bookmark the following:
-	
-	  # curl -sL https://raw.githubusercontent.com/richardforth/apache2buddy/master/apache2buddy.pl | perl
-	  
-	This method is much safer.
-	
-	For more information on this change refer to the README.md:
-	https://github.com/richardforth/apache2buddy/blob/master/README.md
-	
-	Pay specific attention to the "Security Concerns" and 
-	"Typocamping is a thing and why you should be concerned" 
-	sections.
-	
-	If you still don't understand the dangers of typocamping, remember,
-	you just ran THIS script, on your server as root. Thankfully I am
-	a good guy.
-	
-	The domain will slowly be phased out and will eventually be released.
-	This landing page marks the start of that process. 
-	
-	############### END IMPORTANT SAFTEY ANNOUNCEMENT ##############
 
 # Best Practice
         
@@ -83,37 +64,6 @@ If the md5sums or sha256sums do not match, then changes have been made and its u
 - Compromised script could result in root level compromise of your server
 - Runaway processes doing not what they are supposed to (this actually happened in testing, thankfully all of the known exceptions have been caught)
 
-# Security concerns
-
-While I do everything I can to ensure the code is clean and free from harmful bugs, there is a risk of malware being run,
- for example "typocamping", therefore if you do curl and perl the domain, be sure to type it absolutely correctly.
-
-In order to mitigate the risks I am now urging you to curl and perl directly from github, like so:
-
-	# curl -sL https://raw.githubusercontent.com/richardforth/apache2buddy/master/apache2buddy.pl | perl
-
-This is a MUCH safer method than curling the domain, and making a typo and being left at the mercy of "typocampers".
-
-Any attempts going forward to curl and perl the domain, will give you the landing page above.
-
-# typo squatting  / camping is a thing, and why you should be concerned.
-
-First of all I am just a dude, with a github acount and enough money to keep one domain going. I don't have infinite wealth,
-so buying up all the different likely typo'ed versions of my domain, is impossible.  This is a concern if you are curling 
-and perling a domain, as root. can you see the problem if you ran "curl -sL apach2buddy.pl | perl" ? 
-
-Typo campers COULD take advantange of this and register a domain that is close to mine, in the vague hope of a typo that results
-in you hitting their site istead of mine, and what if THAT site contained a very malicious perl script?
-
-thats typocamping in a nutshell, and, for that reason, I want to stop using the domain, and phase it out.
-
-Supporting links:
-
-https://www.brandshield.com/typosquatting-ways-to-protect-your-brand/
-
-https://arstechnica.com/security/2016/06/college-student-schools-govs-and-mils-on-perils-of-arbitrary-code-execution/
-
-https://nakedsecurity.sophos.com/typosquatting/
 
 # Logging
 

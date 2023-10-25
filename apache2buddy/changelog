@@ -2,6 +2,46 @@ CHANGELOG
 
 When		Who		What
 ======================================================================================
+2022-10-30      Richard Forth   Adding support for Ubuntu 22.04:
+                                - Created a Dockerfile
+				- Pushed a new Docker Image
+				- Added a Ubuntu 22.04 stage in Jenkinsfile
+				- Updated main script to allo it to run on
+				22.04
+				- Further testing is needed.
+				- Issue #403
+2022-10-30      Richard Forth   Added a2bchk.sh script and extra step in
+				Jenkins pipelene. Credit to Dakman for the
+				reminder! :) Issue #402
+2022-03-29	Richard Forth   Adding support for AmazonLinux
+				- Pending CICD testing
+				- Fixed issue with AmazonLinux 2 docker
+				container (not in this repo)
+2022-03-29	Richard Forth   Adding support for AmazonLinux
+				- Tests Failing Currently
+				- Work in progress
+2022-03-28	Richard Forth   Added support for Alma Linux 8 
+				- Tests Passing
+2022-03-28	Richard Forth   Added support for Rocky Linux 8
+				- Tests Passing
+2022-03-28	Richard Forth   Removed support for EOL Operating Systems
+2021-11-03	Emil Cazamir	Added SuSE Linux v.12 compatibility 
+				Using httpd/apache2 running in prefork mode, tested 
+				with SLES 12 SP5
+2021-10-28	w4zu            Add support for Debian 11
+2021-02-22	Richard Forth   Added an important message about
+				Domain expiry and non renewal, and the risks
+				and mitigations that were previously put in
+				place. 
+				- Closes Issue #367
+				- Removed support for RHEL / CentOS 6, as it
+				went EOL November 30th 2020.
+				- Closes issue #364
+				- Updated messaging with regards to worker/mpm
+				report inconsistency.
+				- Closes issue #363
+				Added php to Dockerfiles
+				- Closes #356
 2020-10-03	Richard Forth   Added an important message about
 				troubleshooting apache vs running this script.
 2020-09-30	Richard Forth   Clarification onf "10% of MAX" wording to:
