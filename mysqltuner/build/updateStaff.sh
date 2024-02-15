@@ -8,8 +8,13 @@ perltidy -b mysqltuner.pl
 )
 echo "* Update CVE list"
 perl updateCVElist.pl
+dos2unix ../mysqltuner.pl
 
-git add ../vulnerabilities.csv ../mysqltuner.pl ../USAGE.md
+# Update Feature list
+bash ./genFeatures.sh
+
+git add ../vulnerabilities.csv ../mysqltuner.pl ../USAGE.md ../FEATURES.md
 git commit -m 'Update Vulnerabilities list
 Indenting mysqltuner
-Update Usage information'
+Update Usage information
+Regenerate fetures list'

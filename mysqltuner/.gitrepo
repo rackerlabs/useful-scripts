@@ -5,8 +5,8 @@
 ;
 [subrepo]
 	remote = https://github.com/major/MySQLTuner-perl.git
-	branch = 1.7.13
-	commit = 59e5f40ed199e07cae6004d734c5bacf8fff3ece
-	parent = bbb533ecde99b5ca363c7409c85511402554e087
+	branch = master
+	commit = ac43eee9692c7f5ffcbdd975c2bd370fda5868f8
+	parent = ede1afbfef72f2fc0fbb0f56ba7f95e92a8826f5
 	method = merge
-	cmdver = 0.4.0
+	cmdver = 0.4.6
