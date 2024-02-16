@@ -5,3 +5,16 @@ build/cve*
 build/vulnerabilities*
 *.bak
 Vagrant/Vagrantfile
+Vagrant/data
+Vagrant/.vagrant
+contents
+contents/*
+reports_*
+golang/prog-*
+.vscode
+test_db/**
+result*
+result_*
+sql/*.sql
+sql/*.csv
+cve.csv
