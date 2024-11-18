@@ -1,0 +1,67 @@
+services:
+  python27:
+    build:
+      context: .
+      args:
+        IMAGE: python:2.7-buster
+        PIP: pip
+        PYTHON_VERSION: 2
+    image: python27-pytest
+    volumes:
+      - .:/app
+
+  python36:
+    build:
+      context: .
+      args:
+        IMAGE: python:3.6-buster
+        PIP: pip
+        PYTHON_VERSION: 3
+    image: python36-pytest
+    volumes:
+      - .:/app
+
+  python310:
+    build:
+      context: .
+      args:
+        IMAGE: python:3.10-buster
+        PIP: pip
+        PYTHON_VERSION: 3
+    image: python310-pytest
+    volumes:
+      - .:/app
+
+  amazonlinux:
+    build:
+      context: .
+      args:
+        IMAGE: amazonlinux
+        PIP: pip3
+        PYTHON_VERSION: 3
+    image: amazonlinux-pytest
+    volumes:
+      - .:/app
+
+  centos7:
+    build:
+      context: .
+      args:
+        IMAGE: centos/python-27-centos7
+        PIP: pip
+        PYTHON_VERSION: 2
+    image: centos7-pytest
+    volumes:
+      - .:/app
+
+  # https://github.com/sickcodes/Docker-OSX
+  osx:
+    build:
+      context: .
+      args:
+        IMAGE: sickcodes/docker-osx
+        PIP: python -m pip
+        PYTHON_VERSION: 3
+    image: osx-pytest
+    volumes:
+      - .:/app

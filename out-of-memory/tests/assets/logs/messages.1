@@ -1,0 +1,96 @@
+Sep 29 08:12:34 hnsin-varnish kernel: in:imjournal invoked oom-killer: gfp_mask=0x6200ca(GFP_HIGHUSER_MOVABLE), order=0, oom_score_adj=0
+Sep 29 08:12:34 hnsin-varnish kernel: CPU: 0 PID: 879 Comm: in:imjournal Kdump: loaded Not tainted 4.18.0-553.8.1.el8_10.x86_64 #1
+Sep 29 08:12:34 hnsin-varnish kernel: Hardware name: Red Hat RHEL/RHEL-AV, BIOS 1.15.0-2.module+el8.6.0+14757+c25ee005 04/01/2014
+Sep 29 08:12:34 hnsin-varnish kernel: Call Trace:
+Sep 29 08:12:34 hnsin-varnish kernel: dump_stack+0x41/0x60
+Sep 29 08:12:34 hnsin-varnish kernel: dump_header+0x4a/0x1df
+Sep 29 08:12:34 hnsin-varnish kernel: oom_kill_process.cold.33+0xb/0x10
+Sep 29 08:12:34 hnsin-varnish kernel: out_of_memory+0x1bd/0x4e0
+Sep 29 08:12:34 hnsin-varnish kernel: __alloc_pages_slowpath+0xbf0/0xcd0
+Sep 29 08:12:34 hnsin-varnish kernel: __alloc_pages_nodemask+0x2e2/0x330
+Sep 29 08:12:34 hnsin-varnish kernel: pagecache_get_page+0xce/0x310
+Sep 29 08:12:34 hnsin-varnish kernel: filemap_fault+0x6c8/0xa30
+Sep 29 08:12:34 hnsin-varnish kernel: ? __mod_lruvec_page_state+0x5e/0x80
+Sep 29 08:12:34 hnsin-varnish kernel: ? page_add_file_rmap+0x99/0x150
+Sep 29 08:12:34 hnsin-varnish kernel: ? alloc_set_pte+0xb6/0x3d0
+Sep 29 08:12:34 hnsin-varnish kernel: ? xas_load+0x8/0x80
+Sep 29 08:12:34 hnsin-varnish kernel: ? xas_find+0x183/0x1c0
+Sep 29 08:12:34 hnsin-varnish kernel: ? filemap_map_pages+0x271/0x410
+Sep 29 08:12:34 hnsin-varnish kernel: ext4_filemap_fault+0x2c/0x40 [ext4]
+Sep 29 08:12:34 hnsin-varnish kernel: __do_fault+0x38/0xc0
+Sep 29 08:12:34 hnsin-varnish kernel: handle_pte_fault+0x55d/0x880
+Sep 29 08:12:34 hnsin-varnish kernel: __handle_mm_fault+0x552/0x6d0
+Sep 29 08:12:34 hnsin-varnish kernel: handle_mm_fault+0xca/0x2a0
+Sep 29 08:12:34 hnsin-varnish kernel: __do_page_fault+0x1e4/0x440
+Sep 29 08:12:34 hnsin-varnish kernel: do_page_fault+0x37/0x12d
+Sep 29 08:12:34 hnsin-varnish kernel: ? page_fault+0x8/0x30
+Sep 29 08:12:34 hnsin-varnish kernel: page_fault+0x1e/0x30
+Sep 29 08:12:34 hnsin-varnish kernel: RIP: 0033:0x7f3fa8a9c43b
+Sep 29 08:12:34 hnsin-varnish kernel: Code: Unable to access opcode bytes at RIP 0x7f3fa8a9c411.
+Sep 29 08:12:34 hnsin-varnish kernel: RSP: 002b:00007f3fa5ae4a80 EFLAGS: 00010206
+Sep 29 08:12:34 hnsin-varnish kernel: RAX: 00007f3fa5ae4a90 RBX: 00007f3f98001510 RCX: 0000000000000000
+Sep 29 08:12:34 hnsin-varnish kernel: RDX: 0000000000000000 RSI: 0000000035a4e900 RDI: 00007f3fa5ae4a90
+Sep 29 08:12:34 hnsin-varnish kernel: RBP: 00000000000dbba0 R08: 0000000000000009 R09: 00000000b5af05aa
+Sep 29 08:12:34 hnsin-varnish kernel: R10: 00000000b5af05aa R11: 0000000000000000 R12: 0000000000000000
+Sep 29 08:12:34 hnsin-varnish kernel: R13: 00007f3fa68ee000 R14: 0000000000000053 R15: 00007f3f8e720318
+Sep 29 08:12:34 hnsin-varnish kernel: Mem-Info:
+Sep 29 08:12:34 hnsin-varnish kernel: active_anon:33632 inactive_anon:1327714 isolated_anon:0#012 active_file:43 inactive_file:127 isolated_file:40#012 unevictable:20549 dirty:23 writeback:0#012 slab_reclaimable:11170 slab_unreclaimable:13399#012 mapped:34989 shmem:74232 pagetables:7365 bounce:0#012 free:23902 free_pcp:1055 free_cma:0
+Sep 29 08:12:34 hnsin-varnish kernel: Node 0 active_anon:134528kB inactive_anon:5310856kB active_file:172kB inactive_file:508kB unevictable:82196kB isolated(anon):0kB isolated(file):160kB mapped:139956kB dirty:92kB writeback:0kB shmem:296928kB shmem_thp: 0kB shmem_pmdmapped: 0kB anon_thp: 927744kB writeback_tmp:0kB kernel_stack:6544kB pagetables:29460kB all_unreclaimable? yes
+Sep 29 08:12:34 hnsin-varnish kernel: Node 0 DMA free:14336kB min:176kB low:220kB high:264kB active_anon:0kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:0kB writepending:0kB present:15992kB managed:15360kB mlocked:0kB bounce:0kB free_pcp:0kB local_pcp:0kB free_cma:0kB
+Sep 29 08:12:34 hnsin-varnish kernel: lowmem_reserve[]: 0 2655 5626 5626 5626
+Sep 29 08:12:34 hnsin-varnish kernel: Node 0 DMA32 free:43760kB min:31812kB low:39764kB high:47716kB active_anon:60496kB inactive_anon:2618584kB active_file:304kB inactive_file:216kB unevictable:0kB writepending:0kB present:3129196kB managed:2756784kB mlocked:0kB bounce:0kB free_pcp:3960kB local_pcp:824kB free_cma:0kB
+Sep 29 08:12:34 hnsin-varnish kernel: lowmem_reserve[]: 0 0 2970 2970 2970
+Sep 29 08:12:34 hnsin-varnish kernel: Node 0 Normal free:37372kB min:35588kB low:44484kB high:53380kB active_anon:74032kB inactive_anon:2692272kB active_file:0kB inactive_file:260kB unevictable:82196kB writepending:92kB present:3145728kB managed:3042240kB mlocked:82196kB bounce:0kB free_pcp:260kB local_pcp:80kB free_cma:0kB
+Sep 29 08:12:34 hnsin-varnish kernel: lowmem_reserve[]: 0 0 0 0 0
+Sep 29 08:12:34 hnsin-varnish kernel: Node 0 DMA: 0*4kB 0*8kB 0*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 1*2048kB (M) 3*4096kB (M) = 14336kB
+Sep 29 08:12:34 hnsin-varnish kernel: Node 0 DMA32: 279*4kB (UME) 533*8kB (UME) 301*16kB (UME) 222*32kB (UME) 132*64kB (UME) 60*128kB (UME) 23*256kB (UME) 6*512kB (UE) 1*1024kB (E) 0*2048kB 0*4096kB = 43412kB
+Sep 29 08:12:34 hnsin-varnish kernel: Node 0 Normal: 635*4kB (UME) 480*8kB (UME) 310*16kB (UME) 286*32kB (UME) 98*64kB (ME) 29*128kB (UME) 13*256kB (M) 6*512kB (M) 1*1024kB (M) 0*2048kB 0*4096kB = 37900kB
+Sep 29 08:12:34 hnsin-varnish kernel: Node 0 hugepages_total=0 hugepages_free=0 hugepages_surp=0 hugepages_size=2048kB
+Sep 29 08:12:34 hnsin-varnish kernel: 94990 total pagecache pages
+Sep 29 08:12:34 hnsin-varnish kernel: 0 pages in swap cache
+Sep 29 08:12:34 hnsin-varnish kernel: Swap cache stats: add 0, delete 0, find 0/0
+Sep 29 08:12:34 hnsin-varnish kernel: Free swap  = 0kB
+Sep 29 08:12:34 hnsin-varnish kernel: Total swap = 0kB
+Sep 29 08:12:34 hnsin-varnish kernel: 1572729 pages RAM
+Sep 29 08:12:34 hnsin-varnish kernel: 0 pages HighMem/MovableOnly
+Sep 29 08:12:34 hnsin-varnish kernel: 119133 pages reserved
+Sep 29 08:12:34 hnsin-varnish kernel: 0 pages hwpoisoned
+Sep 29 08:12:34 hnsin-varnish kernel: Tasks state (memory values in pages):
+Sep 29 08:12:34 hnsin-varnish kernel: [  pid  ]   uid  tgid total_vm      rss pgtables_bytes swapents oom_score_adj name
+Sep 29 08:12:34 hnsin-varnish kernel: [    610]     0   610    57093    28584   471040        0             0 systemd-journal
+Sep 29 08:12:34 hnsin-varnish kernel: [    649]     0   649    25017      929   204800        0         -1000 systemd-udevd
+Sep 29 08:12:34 hnsin-varnish kernel: [    737]     0   737    14295      166   131072        0         -1000 auditd
+Sep 29 08:12:34 hnsin-varnish kernel: [    759]     0   759    33893      256   159744        0             0 qemu-ga
+Sep 29 08:12:34 hnsin-varnish kernel: [    763]     0   763    20341      559   184320        0             0 systemd-logind
+Sep 29 08:12:34 hnsin-varnish kernel: [    767]     0   767    31267      166   139264        0             0 irqbalance
+Sep 29 08:12:34 hnsin-varnish kernel: [    770]    81   770    16267      268   159744        0          -900 dbus-daemon
+Sep 29 08:12:34 hnsin-varnish kernel: [    771]    28   771   224023      262   249856        0             0 nscd
+Sep 29 08:12:34 hnsin-varnish kernel: [    772]     0   772    94682      666   372736        0             0 NetworkManager
+Sep 29 08:12:34 hnsin-varnish kernel: [    783]   995   783    29337      166   126976        0             0 chronyd
+Sep 29 08:12:34 hnsin-varnish kernel: [    804]     0   804   101605     4009   421888        0             0 tuned
+Sep 29 08:12:34 hnsin-varnish kernel: [    806]     0   806    18651      230   188416        0         -1000 sshd
+Sep 29 08:12:34 hnsin-varnish kernel: [    816]     0   816     6005      215    90112        0             0 crond
+Sep 29 08:12:34 hnsin-varnish kernel: [    817]     0   817     6126       46    94208        0             0 atd
+Sep 29 08:12:34 hnsin-varnish kernel: [    832]   993   832     4838      142    86016        0          -500 nrpe
+Sep 29 08:12:34 hnsin-varnish kernel: [    834]     0   834    21185     1143   200704        0             0 snmpd
+Sep 29 08:12:34 hnsin-varnish kernel: [    836]     0   836   113244     7488   442368        0             0 rsyslogd
+Sep 29 08:12:34 hnsin-varnish kernel: [    844]     0   844     1216       18    57344        0             0 agetty
+Sep 29 08:12:34 hnsin-varnish kernel: [    853]     0   853     9263     1626    98304        0             0 varnishd
+Sep 29 08:12:34 hnsin-varnish kernel: [    968]     0   968    84459     7450   319488        0             0 nginx
+Sep 29 08:12:34 hnsin-varnish kernel: [   1436]   998  1436   434512     1670   335872        0             0 polkitd
+Sep 29 08:12:34 hnsin-varnish kernel: [   1475]     0  1475    25802      247   167936        0             0 master
+Sep 29 08:12:34 hnsin-varnish kernel: [   1479]    89  1479    26328      255   188416        0             0 qmgr
+Sep 29 08:12:34 hnsin-varnish kernel: [ 740298]    89 740298    27385      250   196608        0             0 tlsmgr
+Sep 29 08:12:34 hnsin-varnish kernel: [ 965653]     0 965653   302291     5130   376832        0             0 fail2ban-server
+Sep 29 08:12:34 hnsin-varnish kernel: [3117813]   991 3117813  2926359  1214746 22183936        0             0 cache-main
+Sep 29 08:12:34 hnsin-varnish kernel: [3789349]   992 3789349    84321     7414   294912        0             0 nginx
+Sep 29 08:12:34 hnsin-varnish kernel: [3789350]   992 3789350    84385     7498   299008        0             0 nginx
+Sep 29 08:12:34 hnsin-varnish kernel: [3789351]   992 3789351    84461     7417   290816        0             0 nginx
+Sep 29 08:12:34 hnsin-varnish kernel: [3789352]   992 3789352    84449     7470   294912        0             0 nginx
+Sep 29 08:12:34 hnsin-varnish kernel: [3929058]    89 3929058    26315      242   184320        0             0 pickup
+Sep 29 08:12:34 hnsin-varnish kernel: [3931835]     0 3931835   147385    41099  1044480        0             0 dnf
+Sep 29 08:12:34 hnsin-varnish kernel: [3931876]   993 3931876     4838      158    86016        0          -500 nrpe
+Sep 29 08:12:34 hnsin-varnish kernel: [3931877]   993 3931877     4838      158    81920        0          -500 nrpe
+Sep 29 08:12:34 hnsin-varnish kernel: [3931878]   993 3931878     2441       26    57344        0          -500 sh
+Sep 29 08:12:34 hnsin-varnish kernel: oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=/,mems_allowed=0,global_oom,task_memcg=/system.slice/varnish.service,task=cache-main,pid=3117813,uid=991
+Sep 29 08:12:34 hnsin-varnish kernel: Out of memory: Killed process 3117813 (cache-main) total-vm:11705436kB, anon-rss:4805020kB, file-rss:53964kB, shmem-rss:0kB, UID:991 pgtables:21664kB oom_score_adj:0

@@ -1,0 +1,52 @@
+
+name: Run Unit Tests on Multiple Python Versions and Distributions
+
+on:
+  workflow_call:
+
+env:
+    REPOSITORY: lukeshirnia/out-of-memory
+
+jobs:
+
+  build_and_push:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+    # Don't pull for now
+    # - name: Pull Docker images (if exists)
+    #   run: |
+    #     docker-compose config | grep 'image:' | awk '{print $2}' | while read image; do
+    #       base_image_name=$(echo $image | awk -F: '{print $1}')
+    #       version_tag=$(echo $image | awk -F: '{print $2}')
+    #       existing_tag="${{ env.REPOSITORY }}:${base_image_name#*/}"
+    #       echo "Trying to pull existing image $existing_tag"
+    #       docker pull $existing_tag || true  # Continue even if pull fails
+    #     done
+
+    - name: Build Docker images
+      run: |
+        docker-compose build --pull
+
+    - name: Push Docker images
+      run: |
+        docker-compose config | grep 'image:' | awk '{print $2}' | while read image; do
+          echo "Processing image: $image"
+          base_image_name=$(echo $image | awk -F: '{print $1}')
+          version_tag=$(echo $image | awk -F: '{print $2}')
+          new_tag="${{ env.REPOSITORY }}:${base_image_name#*/}"
+          echo "Tagging image $image as $new_tag"
+          docker tag $image $new_tag
+          docker push $new_tag
+        done
