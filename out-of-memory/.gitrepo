@@ -6,7 +6,7 @@
 [subrepo]
 	remote = https://github.com/LukeShirnia/out-of-memory.git
 	branch = master
-	commit = 31336ad2322bb37d2bcd076a3400f5f8e279ddc1
-	parent = 5b12313530521ba78b3a53a1e64b7f41aa30f6da
+	commit = 105810570acb775fddab38baa479973ca2bbd679
+	parent = 1ea7dd1b9e068c47fbed3d1dc51de5a6e158fe00
 	method = merge
-	cmdver = 0.4.0
+	cmdver = 0.4.6
